@@ -1,0 +1,207 @@
+@import url("https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap");
+
+body {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  font-size: 62.5%;
+  font-family: "Quicksand", sans-serif;
+  background: #eeeeee;
+}
+main {
+  min-height: calc(100vh - 47px - 48px - 40px);
+  display: grid;
+  place-content: center;
+}
+.main-container {
+  background: white;
+  width: 488px;
+  height: 550px;
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border-top: 4px solid #3ac7ec;
+}
+
+nav {
+  display: flex;
+  align-items: center;
+  background: #25313f;
+  border-bottom: 3px solid #31b9e4;
+  height: 47px;
+}
+nav img {
+  width: 134px;
+  height: 36px;
+  margin-left: 30px;
+}
+.header {
+  display: flex;
+  align-items: center;
+  margin: 10px;
+}
+.header svg {
+  width: 17px;
+  height: 26px;
+  padding-left: 18px;
+}
+.header p {
+  font-size: 24px;
+  font-weight: 600;
+  text-align: center;
+  margin: auto;
+}
+.radio-section {
+  display: flex;
+  align-items: center;
+  padding-top: 20px;
+}
+.radio-section label {
+  font-size: 16px;
+  font-weight: 500;
+}
+.radio-section input {
+  accent-color: #1f7a54;
+  width: 20px;
+  height: 24px;
+}
+.district {
+  display: flex;
+  align-items: center;
+  padding-left: 20px;
+}
+.independent-school {
+  display: flex;
+  align-items: center;
+  padding-left: 50px;
+}
+.first,
+.second {
+  padding-left: 20px;
+  padding-right: 20px;
+}
+.first p {
+  font-size: 12px;
+  color: #666666;
+  font-weight: 500;
+  margin: 20px 0px 5px 5px;
+}
+.second p {
+  font-size: 12px;
+  color: #666666;
+  font-weight: 500;
+  margin: 20px 0px 5px 5px;
+}
+.first select,
+.second select {
+  border: none;
+  border-bottom: 1px solid #0000001f;
+  font-size: 16px;
+  font-weight: 500;
+  width: 100%;
+}
+option{
+    font-family: "Quicksand", sans-serif;  
+}
+
+.third,
+.fourth {
+  display: flex;
+  flex-direction: column;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+.third p,
+.fourth p {
+  align-self: flex-end;
+  font-size: 14px;
+  font-weight: 500;
+  color: #1f7a54;
+  padding-left: 20px;
+  margin-top: 5px;
+}
+.third input,
+.fourth input {
+  border: none;
+  border-bottom: 1px solid #0000001f;
+  font-size: 16px;
+  font-weight: 500;
+}
+.third input {
+  margin-top: 50px;
+}
+.third input::placeholder {
+    font-family: "Quicksand", sans-serif;
+}
+.fourth input::placeholder {
+    font-family: "Quicksand", sans-serif;
+}
+.remember-me {
+  display: flex;
+  align-items: center;
+  padding-left: 20px;
+}
+.remember-me label {
+  font-size: 16px;
+  font-weight: 500;
+}
+.remember-me input[type="checkbox"] {
+  width: 18px;
+  height: 24px;
+  accent-color: #1f7a54;
+}
+button {
+  background: #3fd28b;
+  width: 216px;
+  height: 40px;
+  box-shadow: 0px 3px 5px #0000003d;
+  border: none;
+  font-size: 14px;
+  font-weight: bold;
+  color: #1f2834;
+  cursor: pointer;
+}
+.log-in-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 20px;
+}
+.contact {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+.contact p {
+  font-size: 14px;
+  color: #1f7a54;
+  font-weight: 500;
+}
+.contact div {
+  border-left: 1px solid #E0E1E1;
+  height: 20px;
+}
+footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap:5px;
+  background: #E0E1E1;
+}
+footer img {
+  width: 90px;
+  height: 24px;
+  filter: invert();
+}
+footer p{
+    font-size: 12px;
+}
+footer p:nth-child(4){
+    font-weight: bold;
+}
+footer div {
+    border-left: 1px solid #a1a1a1;
+    height: 18px;
+  }
