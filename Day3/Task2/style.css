@@ -11,8 +11,8 @@ body {
 main {
   height: 100vh;
   display: flex;
-  /* padding: 30px; */
   flex-direction: column;
+  padding: 30px;
 }
 nav {
   display: flex;
@@ -181,6 +181,7 @@ select {
   justify-content: center;
   gap: 30px;
   align-items: center;
+  /* background: #eeeeee; */
 }
 
 .first-card img {

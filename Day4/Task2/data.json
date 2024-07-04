@@ -1,0 +1,120 @@
+{
+  "cards": [
+    {
+      "img": "assets/images/imageMask.png",
+      "topic": "Acceleration",
+      "favourite": "assets/icons/favourite.svg",
+      "subject": "Physics | Grade 7+2",
+      "chapter": "4 Units 18 Lessons 24 Topics",
+      "tutor": "Mr.Frank's Class B",
+      "duration": "50 Students | 21-Jan-2020 - 21-Aug-2020"
+    },
+    {
+      "img": "assets/images/imageMask-1.png",
+      "topic": "Displacement, Velocity and Speed",
+      "favourite": "assets/icons/favourite.svg",
+      "subject": "Physics | Grade 6+3",
+      "chapter": "2 Units 15 Lessons 20 Topics",
+      "tutor": "No Classes"
+    },
+    {
+      "img": "assets/images/imageMask-2.png",
+      "topic": "Introduction to Biology:Micro orgranisms and how they affec...",
+      "favourite": "assets/icons/favourite.svg",
+      "subject": "Biology | Grade 4+1",
+      "chapter": "5 Units 16 Lessons 22 Topics",
+      "tutor": "All Classes",
+      "duration": "300 Students"
+    },
+    {
+      "img": "assets/images/imageMask-3.png",
+      "topic": "Introduction to High School Mathematics",
+      "favourite": "assets/icons/favourite.svg",
+      "subject": "Mathematics | Grade 8+3",
+      "tutor": "Mr.Frank's Class A",
+      "duration": "44 Students | 14-Jan-2019 - 20-Oct-2020"
+    }
+  ],
+  "alerts":[
+    {
+      "name": "PA: Wilson Kumar",
+      "img": "",
+      "alertMsg": "No classes will be held on 21st Nov",
+      "course": "",
+      "files": "2 files attached",
+      "time": "15-Sep-2018 at 07:21pm"
+    },
+    {
+      "name": "PA: Wilson Kumar",
+      "img": "",
+      "alertMsg": "No classes will be held on 21st Nov",
+      "course": "",
+      "files": "2 files attached",
+      "time": "15-Sep-2018 at 07:21pm"
+    },
+    {
+      "name": "PA: Wilson Kumar",
+      "img": "",
+      "alertMsg": "No classes will be held on 21st Nov",
+      "course": "Course: Mathematics 101",
+      "files": "2 files attached",
+      "time": "15-Sep-2018 at 07:21pm"
+    },
+    {
+      "name": "PA: Wilson Kumar",
+      "img": "",
+      "alertMsg": "No classes will be held on 21st Nov",
+      "course": "",
+      "files": "2 files attached",
+      "time": "15-Sep-2018 at 07:21pm"
+    },
+    {
+      "name": "PA: Wilson Kumar",
+      "img": "",
+      "alertMsg": "No classes will be held on 21st Nov",
+      "course": "",
+      "files": "2 files attached",
+      "time": "15-Sep-2018 at 07:21pm"
+    },
+    {
+      "name": "PA: Wilson Kumar",
+      "img": "",
+      "alertMsg": "No classes will be held on 21st Nov",
+      "course": "",
+      "files": "2 files attached",
+      "time": "15-Sep-2018 at 07:21pm"
+    }
+  ],
+  "notifications": [
+    {
+      "name": "License for Introduction to Algebra has been assigned to your school",
+      "course": "Course: Advanced Mathematics",
+      "time": "15-Sep-2018 at 07:21pm"
+    },
+    {
+      "name": "License for Introduction to Algebra has been assigned to your school",
+      "course": "Course: Advanced Mathematics",
+      "time": "15-Sep-2018 at 07:21pm"
+    },
+    {
+      "name": "License for Introduction to Algebra has been assigned to your school",
+      "course": "Course: Advanced Mathematics",
+      "time": "15-Sep-2018 at 07:21pm"
+    },
+    {
+      "name": "License for Introduction to Algebra has been assigned to your school",
+      "course": "Course: Advanced Mathematics",
+      "time": "15-Sep-2018 at 07:21pm"
+    },
+    {
+      "name": "License for Introduction to Algebra has been assigned to your school",
+      "course": "Course: Advanced Mathematics",
+      "time": "15-Sep-2018 at 07:21pm"
+    },
+    {
+      "name": "License for Introduction to Algebra has been assigned to your school",
+      "course": "Course: Advanced Mathematics",
+      "time": "15-Sep-2018 at 07:21pm"
+    }
+  ]
+}

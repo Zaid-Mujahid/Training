@@ -1,0 +1,205 @@
+@import url("https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap");
+
+$gray: #eeeeee;
+$white: #ffff;
+@mixin flexCol {
+  display: flex;
+  flex-direction: column;
+}
+@mixin flexColCenter {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+@mixin flexCenterVertical {
+  display: flex;
+  align-items: center;
+}
+@mixin flexCenter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+body {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  font-size: 62.5%;
+  font-family: "Quicksand", sans-serif;
+  background: $gray;
+}
+main {
+  min-height: calc(100vh - 47px - 48px - 40px);
+  display: grid;
+  place-content: center;
+}
+.main-container {
+  background: white;
+  width: 488px;
+  height: 550px;
+  padding: 30px;
+  @include flexColCenter();
+  border-top: 4px solid #3ac7ec;
+}
+nav {
+  @include flexCenterVertical();
+  background: #25313f;
+  border-bottom: 3px solid #31b9e4;
+  height: 47px;
+  img {
+    width: 134px;
+    height: 36px;
+    margin-left: 30px;
+  }
+}
+.header {
+  @include flexCenterVertical();
+  margin: 10px;
+  svg {
+    width: 17px;
+    height: 26px;
+    padding-left: 18px;
+  }
+  p {
+    font-size: 24px;
+    font-weight: 600;
+    text-align: center;
+    margin: auto;
+  }
+}
+.radio-section {
+  @include flexCenterVertical();
+  padding-top: 20px;
+  label {
+    font-size: 16px;
+    font-weight: 500;
+  }
+  input {
+    accent-color: #1f7a54;
+    width: 20px;
+    height: 24px;
+  }
+  .district {
+    @include flexCenterVertical();
+    padding-left: 20px;
+  }
+  .independent-school {
+    @include flexCenterVertical();
+    padding-left: 50px;
+  }
+}
+.first,
+.second {
+  padding-left: 20px;
+  padding-right: 20px;
+  p {
+    font-size: 12px;
+    color: #666666;
+    font-weight: 500;
+    margin: 20px 0px 5px 5px;
+  }
+  select {
+    border: none;
+    border-bottom: 1px solid #0000001f;
+    font-size: 16px;
+    font-weight: 500;
+    width: 100%;
+  }
+}
+option {
+  font-family: "Quicksand", sans-serif;
+}
+.third,
+.fourth {
+  @include flexCol();
+  padding-left: 20px;
+  padding-right: 20px;
+  p {
+    align-self: flex-end;
+    font-size: 14px;
+    font-weight: 500;
+    color: #1f7a54;
+    padding-left: 20px;
+    margin-top: 5px;
+  }
+  input {
+    border: none;
+    border-bottom: 1px solid #0000001f;
+    font-size: 16px;
+    font-weight: 500;
+  }
+}
+.third {
+  input {
+    margin-top: 50px;
+  }
+  &::placeholder {
+    font-family: "Quicksand", sans-serif;
+  }
+}
+.fourth {
+  &::placeholder {
+    font-family: "Quicksand", sans-serif;
+  }
+}
+.remember-me {
+  @include flexCenterVertical();
+  padding-left: 20px;
+  label {
+    font-size: 16px;
+    font-weight: 500;
+  }
+  input[type="checkbox"] {
+    width: 18px;
+    height: 24px;
+    accent-color: #1f7a54;
+  }
+}
+.log-in-btn {
+  @include flexCenter();
+  margin: 20px;
+  button {
+    background: #3fd28b;
+    width: 216px;
+    height: 40px;
+    box-shadow: 0px 3px 5px #0000003d;
+    border: none;
+    font-size: 14px;
+    font-weight: bold;
+    color: #1f2834;
+    cursor: pointer;
+  }
+}
+.contact {
+  @include flexCenter();
+  gap: 8px;
+  p {
+    font-size: 14px;
+    color: #1f7a54;
+    font-weight: 500;
+  }
+  div {
+    border-left: 1px solid #e0e1e1;
+    height: 20px;
+  }
+}
+footer {
+  @include flexCenter();
+  gap: 5px;
+  background: #e0e1e1;
+  img {
+    width: 90px;
+    height: 24px;
+  }
+  p {
+    font-size: 12px;
+  }
+  p:nth-child(4) {
+    font-weight: bold;
+  }
+    div {
+    border-left: 1px solid #a1a1a1;
+    height: 18px;
+  }
+}

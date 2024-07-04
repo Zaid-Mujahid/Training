@@ -1,0 +1,589 @@
+@import url("https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap");
+body {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  font-size: 62.5%;
+  font-family: "Quicksand", sans-serif;
+  background: #eeeeee;
+}
+
+main {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 30px;
+}
+
+nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #25313f;
+  height: 56px;
+  text-transform: uppercase;
+}
+nav a {
+  color: #3fd28b;
+  font-size: 14px;
+  transition: 0.3s;
+}
+nav .navigate {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  cursor: pointer;
+}
+nav a:hover {
+  color: white;
+  border-bottom: 4px solid white;
+  height: 51px;
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+}
+nav .nav-logo {
+  width: 250px;
+  height: 50px;
+}
+nav img {
+  width: 30px;
+  height: 35px;
+  margin-left: 20px;
+  margin: 0;
+  transition: 0.3s;
+}
+nav img:hover {
+  filter: brightness(400%);
+  display: flex;
+  align-items: center;
+}
+nav svg {
+  width: 25px;
+  height: 25px;
+}
+nav svg:hover {
+  filter: brightness(400%);
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+}
+nav #account {
+  width: 32px;
+  height: 32px;
+  margin-bottom: 15px;
+}
+nav #hamburger {
+  display: none;
+}
+nav #hamburger:hover {
+  filter: brightness(100%);
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+}
+nav .hamburger-menu {
+  display: flex;
+  flex-direction: column;
+  width: 250px;
+  height: 300px;
+  position: fixed;
+  background: white;
+  color: #1f7a54;
+  font-weight: bold;
+  display: none;
+  top: 56px;
+  right: 20px;
+  transition: 0.1s;
+  box-shadow: 2px 2px 15px gray;
+}
+nav .hamburger-menu .dropdown {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+nav .hamburger-menu p {
+  font-size: 14px;
+}
+nav .hamburger-menu .catalogue {
+  padding-left: 20px;
+}
+nav .hamburger-menu .menu {
+  padding-left: 20px;
+  padding-right: 20px;
+}
+nav .alert-menu {
+  display: flex;
+  flex-direction: column;
+  flex-direction: column-reverse;
+  position: absolute;
+  top: 100px;
+  right: 50px;
+  background: white;
+  text-transform: none;
+  width: 315px;
+  height: 582px;
+  top: 56px;
+  right: 80px;
+  display: none;
+  overflow-y: scroll;
+  box-shadow: 1px 1px 5px gray;
+}
+nav .alert-menu svg {
+  width: 15px;
+  height: 18px;
+}
+nav .alert-menu .pa {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-right: 15px;
+}
+nav .alert-menu .pa-name {
+  font-size: 12px;
+  padding-left: 15px;
+}
+nav .alert-menu .pa-name span {
+  font-weight: 500;
+}
+nav .alert-menu .pa-alert {
+  padding-left: 15px;
+  padding-right: 15px;
+}
+nav .alert-menu .pa-alert p {
+  font-size: 14px;
+  font-weight: 500;
+  margin: 0;
+}
+nav .alert-menu .pa-time {
+  display: flex;
+  justify-content: space-between;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+nav .alert-menu .pa-time p {
+  font-size: 12px;
+}
+nav .alert-menu .pa-course {
+  font-size: 12px;
+  font-weight: 500;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+nav .alert-menu .pa-course p {
+  margin: 5px 0 5px 0;
+}
+nav .alert-menu button {
+  width: 50%;
+  background: white;
+  color: #1f7a54;
+  font-weight: bold;
+  font-size: 14px;
+  outline: none;
+  border: none;
+  padding: 20px 0 20px 0;
+  box-shadow: 1px 1px 5px gray;
+}
+nav .alert-menu .btn1 {
+  border-right: 1px solid rgb(218, 218, 218);
+}
+nav .alert-menu > div {
+  border-bottom: 1px solid #eeeeee;
+}
+nav .announcement-icon:hover + .alert-menu {
+  display: flex;
+}
+nav .notifications {
+  display: flex;
+  flex-direction: column;
+  flex-direction: column-reverse;
+  position: absolute;
+  top: 100px;
+  right: 50px;
+  background: white;
+  text-transform: none;
+  width: 315px;
+  height: 582px;
+  top: 56px;
+  right: 80px;
+  display: none;
+  box-shadow: 1px 1px 5px gray;
+}
+nav .notifications svg {
+  width: 15px;
+  height: 18px;
+}
+nav .notifications .pa {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-right: 15px;
+}
+nav .notifications .noti-name {
+  font-size: 14px;
+  padding-left: 15px;
+  font-weight: 500;
+}
+nav .notifications .noti-name span {
+  font-weight: 500;
+}
+nav .notifications .pa-time {
+  display: flex;
+  justify-content: flex-end;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+nav .notifications .pa-time p {
+  margin: 5px 0 5px 0;
+  font-size: 12px;
+  margin-top: 5px;
+}
+nav .notifications .pa-course {
+  font-size: 12px;
+  font-weight: 500;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+nav .notifications .pa-course p {
+  margin: 5px 0 5px 0;
+}
+nav .notifications button {
+  width: 100%;
+  background: white;
+  color: #1f7a54;
+  font-weight: bold;
+  font-size: 14px;
+  outline: none;
+  border: none;
+  padding: 20px 0 20px 0;
+  box-shadow: 1px 1px 5px gray;
+}
+nav .notifications .btn1 {
+  border-right: 1px solid rgb(218, 218, 218);
+}
+nav .notifications {
+  overflow-y: scroll;
+}
+nav .alert-icon:hover + .notifications {
+  display: flex;
+}
+nav ::-webkit-scrollbar {
+  width: 5px;
+}
+nav ::-webkit-scrollbar-track {
+  border-radius: 10px;
+}
+nav ::-webkit-scrollbar-thumb {
+  background: gray;
+  border-radius: 10px;
+}
+nav .content {
+  background: #eeeeee;
+}
+nav .alert {
+  width: 15px;
+  height: 15px;
+  background: #2a7ff3;
+  position: relative;
+  left: 15px;
+  top: 15px;
+  border-radius: 50%;
+  color: white;
+  font-size: 12px;
+  text-align: center;
+}
+nav .announcement {
+  width: 15px;
+  height: 15px;
+  background: #2a7ff3;
+  position: relative;
+  left: 20px;
+  top: 15px;
+  border-radius: 50%;
+  color: white;
+  font-size: 12px;
+  text-align: center;
+}
+nav .profile {
+  width: 14px;
+  height: 14px;
+  background: white;
+  position: relative;
+  left: 13px;
+  top: 13px;
+  border-radius: 50%;
+  color: #2a7ff3;
+  font-size: 12px;
+  text-align: center;
+}
+
+.courses {
+  display: flex;
+  height: 64px;
+  background: #8ddc97;
+}
+.courses .course {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 4px solid rgb(0, 0, 0);
+  width: 50%;
+}
+.courses .classes {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50%;
+}
+.courses svg {
+  height: 21px;
+  width: 32px;
+}
+.courses span {
+  font-size: 24px;
+  padding-right: 4px;
+  font-weight: 500;
+}
+.courses p {
+  font-size: 16px;
+  padding-left: 3px;
+  font-weight: 500;
+}
+
+.sorting {
+  display: flex;
+  flex-direction: column;
+}
+.sorting .bottom-border {
+  border-bottom: 2px solid rgba(0, 0, 0, 0.1607843137);
+  margin-bottom: 20px;
+}
+.sorting .sort {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.sorting .sort p {
+  font-size: 20px;
+  margin-left: 20px;
+}
+.sorting .sort label {
+  font-size: 16px;
+}
+.sorting .sort .select-class {
+  display: flex;
+}
+.sorting .sort select {
+  font-size: 16px;
+  margin-right: 20px;
+  margin-left: 5px;
+  border: none;
+  font-family: "Quicksand", sans-serif;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1607843137);
+  background: #eeeeee;
+  width: 200px;
+  font-weight: 500;
+  outline: none;
+}
+.sorting .sort .select-class img {
+  height: 24px;
+  width: 12px;
+  margin-right: 20px;
+  cursor: pointer;
+}
+
+.main-course-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 30px;
+}
+
+.first-card {
+  background: white;
+  width: 650px;
+  height: 350px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.first-card img {
+  width: 200px;
+  height: 200px;
+  margin-left: 20px;
+}
+
+.content-container {
+  margin: 0 0 0 25px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  width: 330px;
+}
+.content-container .topic {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.content-container .topic img {
+  width: 30px;
+  height: 28px;
+}
+.content-container .topic p {
+  font-size: 20px;
+  font-weight: 500;
+  margin: 0;
+}
+.content-container .subject {
+  display: flex;
+}
+.content-container .subject p {
+  font-size: 16px;
+  font-weight: 500;
+  margin: 0;
+}
+.content-container .subject span {
+  border-left: 1px solid #eeeeee;
+  margin: 0px 5px 0px 5px;
+}
+.content-container .chapter {
+  display: flex;
+  font-size: 14px;
+}
+.content-container .chapter p {
+  margin: 0px 5px 0px 0px;
+}
+.content-container .tutor select {
+  font-size: 16px;
+  background: white;
+  font-weight: 500;
+  margin-left: -5px;
+  margin-top: 5px;
+  border: none;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1607843137);
+  outline: none;
+  width: 300px;
+}
+.content-container .duration {
+  display: flex;
+  font-size: 14px;
+}
+.content-container .duration p {
+  margin: 0;
+}
+.content-container .duration span {
+  border-left: 1px solid #eeeeee;
+  margin: 0px 5px 0px 5px;
+}
+
+.first-card-content {
+  display: flex;
+}
+
+.seperation {
+  border-bottom: 1px solid #eeeeee;
+  margin: 20px;
+}
+
+.performance {
+  display: flex;
+  justify-content: space-around;
+}
+.performance img {
+  width: 25px;
+  height: 25px;
+}
+
+.contact1,
+.contact2 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.contact1 p,
+.contact2 p {
+  font-size: 14px;
+  color: #1f7a54;
+  font-weight: 500;
+}
+.contact1 div,
+.contact2 div {
+  border-left: 1px solid #e0e1e1;
+  height: 20px;
+}
+
+.footer1,
+.footer2 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  background: #e0e1e1;
+}
+.footer1 img,
+.footer2 img {
+  width: 90px;
+  height: 24px;
+}
+.footer1 p,
+.footer2 p {
+  font-size: 12px;
+}
+.footer1 p:nth-child(4),
+.footer2 p:nth-child(4) {
+  font-weight: bold;
+}
+.footer1 div,
+.footer2 div {
+  border-left: 1px solid #a1a1a1;
+  height: 18px;
+}
+
+.contact1 {
+  display: none;
+}
+
+.footer1 {
+  display: none;
+}
+
+@media only screen and (max-width: 1325px) {
+  .navigate a {
+    display: none;
+  }
+  .navigate .dashboard {
+    display: none;
+  }
+  .navigate #hamburger {
+    display: flex;
+    margin-right: 20px;
+    margin-left: 0;
+    padding-left: 0;
+  }
+  .navigate #hamburger:hover + .hamburger-menu {
+    display: flex;
+  }
+  .main-course-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+  }
+  .contact2 {
+    display: none;
+  }
+  .footer2 {
+    display: none;
+  }
+  .contact1 {
+    display: flex;
+  }
+  .footer1 {
+    display: flex;
+  }
+  #account {
+    margin-right: 0;
+  }
+}/*# sourceMappingURL=styles.css.map */
