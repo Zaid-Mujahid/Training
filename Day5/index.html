@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="styles/style.css" />
+    <script src="index.js" async></script>
+    <title>Task 5</title>
+</head>
+<body>
+    <main>
+        
+        <div class="ribbon">
+            <div class="upload-file">
+                <label>Upload File:</label>
+                <input type="file" accept=".csv" id="fileInput"/>
+            </div>
+            <button onClick="{onInsert}" id="insertRowBtn">Insert Row</button>
+            <button onClick="{onInsert}" id="deleteRowBtn">Delete Row</button>
+            <button onClick="{onInsert}" id="updateRowBtn">Update Row</button>
+            <input type="search" placeholder="Search" id="searchBtn" onkeyup="handleSearch()">
+        </div>
+        
+        <div class="canvasContainer">
+          <canvas
+          id="myCanvas"
+          width="2000"
+          height="1000"
+          ></canvas>
+          <input type="text" id="cellInput" style="display:none; position:absolute;">
+        </div>
+
+        <div class="status-bar">
+          <p class="cnt-value">Cell count:</p>
+          <p class="sum-value">Sum:</p>
+          <p class="max-value">Max:</p>
+          <p class="min-value">Min:</p>
+          <p class="avg-value">Avg:</p>
+        </div>
+    </main>
+  </body>
+</html>
