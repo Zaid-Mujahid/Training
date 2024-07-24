@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="styles/style.css" />
     <script src="index.js" async></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <title>Task 5</title>
 </head>
 <body>
@@ -18,17 +19,36 @@
             <button onClick="{onInsert}" id="insertRowBtn">Insert Row</button>
             <button onClick="{onInsert}" id="deleteRowBtn">Delete Row</button>
             <button onClick="{onInsert}" id="updateRowBtn">Update Row</button>
-            <input type="search" placeholder="Search" id="searchBtn" onkeyup="handleSearch()">
+            <input type="search" placeholder="Find" id="searchInput" onkeyup="handleSearch()">
+            <input type="search" placeholder="Replace" id="replaceInput">
+            <button id="replaceBtn" onclick="handleReplace()">Replace</button>
+        </div>
+        <!-- <div style="height: 400px; width: 600px;">
+
+          <canvas id="myGraph"></canvas>
+        </div> -->
+
+        <div class="canvasContainer" style="overflow: auto;">
+          <canvas
+          id="fixedRow"
+          width="2600"
+          height="30"
+          ></canvas>
+          <canvas
+          id="fixedCol"
+          width="50"
+          height="3000"
+          ></canvas>
+          <div class="innerCanvasContainer">
+            <canvas
+            id="myCanvas"
+            width="2600"
+            height="3000"
+            ></canvas>
+          </div>
+          <input type="text" id="cellInput" style="display:none; position:absolute; outline-color:green; outline-style: solid; outline-width: 2px;">
         </div>
         
-        <div class="canvasContainer">
-          <canvas
-          id="myCanvas"
-          width="2000"
-          height="1000"
-          ></canvas>
-          <input type="text" id="cellInput" style="display:none; position:absolute;">
-        </div>
 
         <div class="status-bar">
           <p class="cnt-value">Cell count:</p>
