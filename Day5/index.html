@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="styles/style.css" />
-    <script src="index.js" async></script>
+    <script type="module" src="index.js" async></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <title>Task 5</title>
 </head>
@@ -16,17 +16,22 @@
                 <label>Upload File:</label>
                 <input type="file" accept=".csv" id="fileInput"/>
             </div>
-            <button onClick="{onInsert}" id="insertRowBtn">Insert Row</button>
-            <button onClick="{onInsert}" id="deleteRowBtn">Delete Row</button>
-            <button onClick="{onInsert}" id="updateRowBtn">Update Row</button>
-            <input type="search" placeholder="Find" id="searchInput" onkeyup="handleSearch()">
+            <!-- <button id="insertRowBtn">Insert Row</button> -->
+            <button id="deleteRowBtn">Delete Row</button>
+            <button id="updateRowBtn">Update Row</button>
+            <input type="search" placeholder="Find" id="searchInput">
             <input type="search" placeholder="Replace" id="replaceInput">
-            <button id="replaceBtn" onclick="handleReplace()">Replace</button>
+            <button id="replaceBtn">Replace</button>
+            <button id="graphBtn">Graph</button>
+            <div class="graphBtns">
+              <button id="barGraphBtn">Bar</button>
+              <button id="lineGraphBtn">Line</button>
+              <button id="pieGraphBtn">Pie</button>
+            </div>
         </div>
-        <!-- <div style="height: 400px; width: 600px;">
-
-          <canvas id="myGraph"></canvas>
-        </div> -->
+        <div style="height: 350px; width: 500px; display: none; top:25%; left:30%;  z-index: 10;">
+          <canvas id="graph" style="background-color: white;"></canvas>
+        </div>
 
         <div class="canvasContainer" style="overflow: auto;">
           <canvas
@@ -46,7 +51,7 @@
             height="3000"
             ></canvas>
           </div>
-          <input type="text" id="cellInput" style="display:none; position:absolute; outline-color:green; outline-style: solid; outline-width: 2px;">
+          <input type="text" id="cellInput" style="display:none; position:absolute; outline-color:green; outline-style: solid; outline-width: 1px;">
         </div>
         
 

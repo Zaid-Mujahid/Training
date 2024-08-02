@@ -94,4 +94,10 @@ body {
   margin: 5px;
   padding: 12px 16px;
   font-size: 16px;
+}
+
+.graphBtns {
+  display: none;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
 }/*# sourceMappingURL=style.css.map */
