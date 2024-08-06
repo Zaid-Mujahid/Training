@@ -12,7 +12,6 @@ import { canvasGrid } from "./grid.js";
 // //   drawGrid(filteredData);
 // // });
 
-let showGraph = true;
 
 const grid = new canvasGrid(
   "myCanvas",
@@ -20,6 +19,5 @@ const grid = new canvasGrid(
   "fixedRow",
   "fixedCol",
   "cellInput",
-  showGraph
 );
 grid.render();

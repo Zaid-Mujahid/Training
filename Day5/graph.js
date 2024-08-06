@@ -1,13 +1,25 @@
 export class graph {
-  constructor(GraphId, dataForGraph, colForGraph, showGraph) {
-    this.showGraph = showGraph;
+  constructor(GraphId, dataForGraph, colForGraph) {
+    this.graph = document.getElementById(GraphId);
+    this.ctx = this.graph.getContext("2d");
+    this.setData(dataForGraph, colForGraph);
+    this.draw = null;
+  }
+
+  setData(dataForGraph, colForGraph) {
     this.dataForGraph = dataForGraph;
     this.colForGraph = colForGraph;
-    this.graph = document.getElementById(GraphId);
-    this.ctx = this.graph.getContext("2d")
   }
+
+  destroyPreviousChart() {
+    if (this.draw) {
+      this.draw.destroy();
+      this.draw = null;
+    }
+  }
+
   drawBarGraph() {
-    if(this.draw!= null) this.graph.destroy()
+    this.destroyPreviousChart();
     this.draw = new Chart(this.ctx, {
       type: "bar",
       data: {
@@ -30,44 +42,52 @@ export class graph {
     });
   }
   drawLineGraph() {
-    if(this.draw!= null) this.graph.destroy()
+    this.destroyPreviousChart();
     this.draw = new Chart(this.ctx, {
-      type : 'line',
-      data : {
-        labels : this.colForGraph,
-        datasets : [
-            {
-              data : this.dataForGraph,
-              label : "",
-              borderColor : "#3cba9f",
-              fill : false
-            }]
+      type: "line",
+      data: {
+        labels: this.colForGraph,
+        datasets: [
+          {
+            data: this.dataForGraph,
+            label: "",
+            borderColor: "#3cba9f",
+            fill: false,
+          },
+        ],
       },
-      options : {
-        title : {
-          display : true,
-        }
-      }
+      options: {
+        title: {
+          display: true,
+        },
+      },
     });
   }
-  drawPieGraph(){
-    if(this.draw!= null) this.graph.destroy()
+  drawPieGraph() {
+    this.destroyPreviousChart();
     this.draw = new Chart(this.ctx, {
-      type : 'pie',
-      data : {
-        labels : this.colForGraph,
-        datasets : [ {
-            data : this.dataForGraph,
-            backgroundColor : [ "#51EAEA", "#FCDDB0",
-              "#FF9D76", "#FB3569", "#82CD47" ],
-            label : ""
-        }]
+      type: "pie",
+      data: {
+        labels: this.colForGraph,
+        datasets: [
+          {
+            data: this.dataForGraph,
+            backgroundColor: [
+              "#51EAEA",
+              "#FCDDB0",
+              "#FF9D76",
+              "#FB3569",
+              "#82CD47",
+            ],
+            label: "",
+          },
+        ],
       },
-      options : {
-        title : {
-          display : true,
-        }
-      }
+      options: {
+        title: {
+          display: true,
+        },
+      },
     });
   }
 }
