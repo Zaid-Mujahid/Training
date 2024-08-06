@@ -6,8 +6,6 @@ export class graph {
     this.graph = document.getElementById(GraphId);
     this.ctx = this.graph.getContext("2d")
   }
-
-
   drawBarGraph() {
     if(this.draw!= null) this.graph.destroy()
     this.draw = new Chart(this.ctx, {
@@ -72,5 +70,4 @@ export class graph {
       }
     });
   }
-  
 }
