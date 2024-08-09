@@ -15,7 +15,7 @@ import { canvasGrid } from "./grid.js";
 
 const grid = new canvasGrid(
   "myCanvas",
-  "canvasContainer",
+  ".canvasContainer",
   "fixedRow",
   "fixedCol",
   "cellInput",

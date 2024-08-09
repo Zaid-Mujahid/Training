@@ -20,22 +20,16 @@ import { graph } from "./graph.js";
  * @property {string} dataAtRowAndCol
  */
 export class canvasGrid {
-  constructor(
-    myCanvas,
-    canvasContainer,
-    fixedRow,
-    fixedCol,
-    cellInput,
-  ) {
+  constructor(myCanvas, canvasContainer, fixedRow, fixedCol, cellInput) {
     this.canvas = document.getElementById(myCanvas);
     this.ctx = this.canvas.getContext("2d");
-    this.mainCanvasContainer = document.getElementById(canvasContainer);
+    this.mainCanvasContainer = document.querySelector(canvasContainer);
+    console.log(this.mainCanvasContainer);
     this.fixedRowCanvas = document.getElementById(fixedRow);
     this.fixedColCanvas = document.getElementById(fixedCol);
     this.ctxFixedRow = this.fixedRowCanvas.getContext("2d");
     this.ctxFixedCol = this.fixedColCanvas.getContext("2d");
     this.graph = document.getElementById("graphDiv");
-    console.log(this.graph);
     this.cellInput = document.getElementById(cellInput);
     this.innerCanvasContainer = document.querySelector(".innerCanvasContainer");
 
@@ -54,7 +48,7 @@ export class canvasGrid {
     /**
      *  @type {number}
      */
-    this.ROWS = 100;
+    this.ROWS = 1000;
     /**
      *  @type {number}
      */
@@ -128,17 +122,15 @@ export class canvasGrid {
     /**
      *  @type {number}
      */
-    this.currentRows = this.ROWS;
+    this.currentRows = 0;
     /**
      *  @type {number}
      */
-    this.currentCols = this.COLS;
-
+    this.currentCols = 0;
     /**
      *  @type {boolean}
      */
     this.isGraphDivVisible = false;
-
     /**
      *  @type {string[]}
      */
@@ -147,18 +139,11 @@ export class canvasGrid {
      *  @type {number[]}
      */
     this.colForGraph = [];
-    /**
-     *  @type {boolean}
-     */
-    this.isCtrlPressed = false;
-    // /**
-    //  *  @type {number}
-    //  */
-    // this.marchingAntsOffset = 0; // Offset for marching ants animation
-    // /**
-    //  *  @type {?number}
-    //  */
-    // this.animationFrameId = null; // ID for the animation frame
+    this.scrollY = 0;
+    this.scrollX = 0;
+
+    this.isShiftPressed = false;
+
     this.init();
   }
   /**
@@ -167,8 +152,8 @@ export class canvasGrid {
   init() {
     // window.addEventListener('resize', ()=>{
     //   this.handlePixelRatio(this.canvas, this.ctx)
-    //   // this.handlePixelRatio(this.fixedColCanvas, this.ctxFixedCol)
-    //   // this.handlePixelRatio(this.fixedRowCanvas, this.ctxFixedRow)
+    //   this.handlePixelRatio(this.fixedColCanvas, this.ctxFixedCol)
+    //   this.handlePixelRatio(this.fixedRowCanvas, this.ctxFixedRow)
     //   this.render()
     // })
     document
@@ -235,22 +220,22 @@ export class canvasGrid {
     this.canvas.addEventListener("mousemove", this.mouseMoveResize.bind(this));
     this.canvas.addEventListener("mouseup", this.mouseUpResize.bind(this));
     this.canvas.addEventListener("dblclick", this.doubleClick.bind(this));
-    // document.addEventListener("keydown", this.handleKeyPress.bind(this));
-    // document.addEventListener("keyup", this.handleKeyUp.bind(this));
-    // document.addEventListener("scroll", this.infiniteScroll.bind(this));
+    document.addEventListener("wheel", this.handleScroll.bind(this));
+    document.addEventListener("keydown", this.handleShiftPress.bind(this));
+    document.addEventListener("keyup", this.handleShiftRelease.bind(this));
   }
   /**
    * @returns {void} --> for retaining pixel ratio on zoom
    */
-  // handlePixelRatio(canvas, ctx) {
-  //   const pixelRatio = window.devicePixelRatio;
+  handlePixelRatio(canvas, ctx) {
+    const pixelRatio = window.devicePixelRatio || 1;
 
-  //   const width = canvas.clientWidth * pixelRatio;
-  //   const height = canvas.clientHeight * pixelRatio;
-  //   canvas.width = width;
-  //   canvas.height = height;
-  //   ctx.scale(pixelRatio, pixelRatio);
-  // }
+    const width = Math.floor(canvas.clientWidth * pixelRatio);
+    const height = Math.floor(canvas.clientHeight * pixelRatio);
+    canvas.width = width;
+    canvas.height = height;
+    ctx.scale(pixelRatio, pixelRatio);
+  }
   /**
    * @return {void} --> deleting rows
    */
@@ -291,7 +276,7 @@ export class canvasGrid {
       this.fixedRowCanvas.width,
       this.fixedRowCanvas.height
     );
-    let x = 0;
+    let x = -this.scrollX;
     for (let j = 0; j <= this.COLS; j++) {
       this.ctxFixedRow.beginPath();
       this.ctxFixedRow.moveTo(x, 0);
@@ -300,8 +285,9 @@ export class canvasGrid {
       this.ctxFixedRow.fillStyle = "lightgray";
       this.ctxFixedRow.fillRect(x, 0, this.columnWidths[j], this.CELL_HEIGHT);
       this.ctxFixedRow.fillStyle = "black";
+      if(j==0) this.ctxFixedRow.fillText("A", x+5, this.CELL_HEIGHT/2)
       this.ctxFixedRow.fillText(
-        String.fromCharCode(65 + j),
+        this.getColName(j),
         x + 5,
         this.CELL_HEIGHT / 2
       );
@@ -320,7 +306,7 @@ export class canvasGrid {
       this.fixedColCanvas.width,
       this.fixedColCanvas.height
     );
-    let y = 0;
+    let y = -this.scrollY;
     for (let i = 0; i < this.ROWS; i++) {
       this.ctxFixedCol.beginPath();
       this.ctxFixedCol.moveTo(0, y);
@@ -337,6 +323,20 @@ export class canvasGrid {
       this.ctxFixedCol.fillText(i + 1, 5, y + this.CELL_HEIGHT / 2);
       y += this.rowHeights[i];
     }
+  }
+  /**
+   * 
+   * @param {number} n 
+   * @returns {number} --> for column characters A,B,C...
+   */
+  getColName(n) {
+    let columnName = "";
+    while (n > 0) {
+      let remainder = (n) % 26;
+      columnName = String.fromCharCode(65 + remainder) + columnName;
+      n = Math.floor((n) / 26);
+    }
+    return columnName;
   }
   /**
    * @param {MouseEvent} e
@@ -416,7 +416,7 @@ export class canvasGrid {
     this.ctx.strokeStyle = "black";
     this.ctx.lineWidth = 0.2;
 
-    let x = 0;
+    let x = -this.scrollX;
     for (let j = 0; j <= this.COLS; j++) {
       this.ctx.beginPath();
       this.ctx.moveTo(x, 0);
@@ -426,7 +426,7 @@ export class canvasGrid {
       if (j < this.COLS) x += this.columnWidths[j];
     }
 
-    let y = 0;
+    let y = -this.scrollY;
     for (let i = 0; i <= this.ROWS; i++) {
       this.ctx.beginPath();
       this.ctx.moveTo(0, y);
@@ -445,10 +445,10 @@ export class canvasGrid {
     this.ctx.textBaseline = "middle";
     this.ctx.fillStyle = "#000";
 
-    let y = 0;
+    let y = -this.scrollY;
     for (let i = 0; i < this.ROWS; i++) {
       if (filteredData[i]) {
-        let x = 0;
+        let x = -this.scrollX;
         for (let j = 0; j < this.COLS; j++) {
           if (this.data[i] && this.data[i][j] !== undefined) {
             this.ctx.fillText(this.data[i][j], x + 5, y + this.CELL_HEIGHT / 2);
@@ -460,16 +460,110 @@ export class canvasGrid {
     }
   }
   /**
+   * @param {KeyboardEvent} e 
+   * @returns {void} --> to detect the shift key press
+   */
+  handleShiftPress(e) {
+    if (e.key === "Shift") {
+      this.isShiftPressed = true;
+    }
+  }
+  /**
+   * @returns {void} --> to detect the shift key release
+   */
+  handleShiftRelease() {
+    this.isShiftPressed = false;
+  }
+  /** 
+   * @param {MouseEvent} e 
+   * @returns {void} --> for handling infinite scrolling
+   */
+  handleScroll(e) {
+    if (!this.isShiftPressed) {
+      this.scrollY += e.deltaY;
+      this.scrollY = Math.max(0, this.scrollY);
+
+      let temp = 0;
+      for (let i = 0; i < this.rowHeights.length; i++) {
+        temp += this.rowHeights[i];
+        
+        if (temp > this.scrollY) {
+          this.currentRows = i;
+          
+          if (this.data.length - this.currentRows <= 100) {
+            this.appendRowsOrColumns();
+          }
+          break;
+        }
+      }
+    }
+    if (this.isShiftPressed) {
+      console.log("inside if");
+      this.scrollX += e.deltaY;
+      this.scrollX = Math.max(0, this.scrollX);
+
+      let temp2 = 0;
+      for (let i = 0; i < this.columnWidths.length; i++) {       
+        temp2 += this.columnWidths[i];
+        if (temp2 > this.scrollX) {
+          this.currentCols = i;
+          
+          if (this.data[0].length - this.currentCols <= 15) {
+            console.log("appending col")
+            this.appendRowsOrColumns();
+          }
+          break;
+        }
+      }
+    }
+    this.render();
+  }
+  /**
+   * @returns {void} --> for adding rows and columns
+   */
+  appendRowsOrColumns() {
+    
+    if (!this.isShiftPressed) {
+      let rowsToAdd = 500;
+      this.ROWS += rowsToAdd;
+      while (rowsToAdd > 0) {
+        this.data.push(new Array());
+        for (let j = 0; j < this.COLS; j++) {
+          this.data[this.data.length - 1].push("");
+        }
+        this.rowHeights.push(30);
+        rowsToAdd--;
+      }
+    }
+    else{
+      let colsToAdd = 50;
+      this.COLS += colsToAdd;
+      while (colsToAdd > 0) {
+        this.data.push(new Array());
+        for (let i = 0; i < this.ROWS; i++) {
+          this.data[this.data[0].length - 1].push("");
+        }
+        this.columnWidths.push(100);
+        colsToAdd--;
+      }
+    }
+  }
+  /**
    * @param {boolean[]} filteredData
    * @returns {void}
    */
   render(filteredData = this.data.map(() => true)) {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.drawGrid();
     this.fixedRow();
     this.drawFixedCol();
-    this.drawGrid();
-    this.drawCellContents(filteredData)
+    this.drawCellContents(filteredData);
   }
+  /**
+   * 
+   * @param {FileReaderEventMap} event 
+   * @returns {void} --> for handling and displaying csv data
+   */
   handleFileUplaod(event) {
     const file = event.target.files[0];
     if (!file) return;
@@ -492,7 +586,7 @@ export class canvasGrid {
    * @returns {number} --> to get the col at X coordinate
    */
   getColumnAtX(x) {
-    let accumulatedWidth = 0;
+    let accumulatedWidth = -this.scrollX;
     for (let i = 0; i < this.COLS; i++) {
       accumulatedWidth += this.columnWidths[i];
       if (x < accumulatedWidth) return i;
@@ -504,7 +598,7 @@ export class canvasGrid {
    * @returns {number} --> to get the col no from left
    */
   getColumnLeftPosition(col) {
-    let x = 0;
+    let x = -this.scrollX;
     for (let i = 0; i < col; i++) {
       x += this.columnWidths[i];
     }
@@ -515,7 +609,7 @@ export class canvasGrid {
    * @returns {number} --> to get the col at X coordinate
    */
   getRowAtY(y) {
-    let accumulatedWidth = 0;
+    let accumulatedWidth = -this.scrollY;
     for (let i = 0; i < this.ROWS; i++) {
       accumulatedWidth += this.rowHeights[i];
       if (y < accumulatedWidth) return i;
@@ -527,7 +621,7 @@ export class canvasGrid {
    * @returns {number} --> to get the col no from left
    */
   getRowTopPosition(row) {
-    let y = 0;
+    let y = -this.scrollY;
     for (let i = 0; i < row; i++) {
       y += this.rowHeights[i];
     }
@@ -547,8 +641,7 @@ export class canvasGrid {
 
     //for graph
     this.isGraphDivVisible = false;
-    this.graph.style.display = "none"
-
+    this.graph.style.display = "none";
 
     //for col resizing
     if (y <= 0) {
@@ -687,28 +780,6 @@ export class canvasGrid {
     this.getDataforGraph();
     this.selectedCells = [];
   }
-  // /**
-  //  * @param {KeyboardEvent} e
-  //  * @returns {void} --> key down for marching ants
-  //  */
-  // handleKeyPress(e) {
-  //   console.log(e);
-  //   if (e.ctrlKey) {
-  //     this.isCtrlPressed = true;
-  //     console.log(this.isCtrlPressed);
-  //     // this.startMarchingAnts(); // Start marching ants animation
-  //   }
-  // }
-  // /**
-  //  * @param {KeyboardEvent} e
-  //  * @returns {void} --> key up for marching ants
-  //  */
-  // handleKeyUp(e) {
-  //   if (e.key === "Control") {
-  //     this.isCtrlPressed = false;
-  //     this.stopMarchingAnts(); // Stop marching ants animation
-  //   }
-  // }
   /**
    * @param {MouseEvent} e
    * @returns {void} --> double click for input
@@ -721,7 +792,7 @@ export class canvasGrid {
       const y = e.clientY - rect.top;
       const col = this.getColumnAtX(x);
       const row = this.getRowAtY(y);
-
+      console.log(row, col);
       if (col !== -1 && row < this.ROWS) {
         this.cellInput.style.display = "block";
         this.cellInput.style.left = `${
@@ -732,7 +803,7 @@ export class canvasGrid {
         }px`;
         this.cellInput.style.width = `${this.columnWidths[col] - 8}px`;
         this.cellInput.style.height = `${this.rowHeights[row] - 5}px`;
-        this.cellInput.value = this.data[row][col];
+        if(this.data[row][col]) this.cellInput.value = this.data[row][col];
         this.cellInput.focus();
 
         this.cellInput.onblur = () => {
@@ -743,30 +814,6 @@ export class canvasGrid {
       }
     }
   }
-  // /**
-  //  * @returns {void} --> start marching ants animation
-  //  */
-  // startMarchingAnts() {
-  //   const animate = () => {
-  //     this.lineDashOffset = (this.lineDashOffset + 1) % 16; // speed calculation
-  //     this.ctx.save();
-  //     this.highlightSelection();
-  //     this.ctx.restore();
-  //     this.animationFrameId = requestAnimationFrame(animate);
-  //   };
-  //   this.animationFrameId = requestAnimationFrame(animate);
-  // }
-  // /**
-  //  * @returns {void} --> stop marching ants animation
-  //  */
-  // stopMarchingAnts() {
-  //   if (this.animationFrameId !== null) {
-  //     cancelAnimationFrame(this.animationFrameId);
-  //     this.animationFrameId = null;
-  //     this.lineDashOffset = 0;
-  //     this.highlightSelection(); // Redraw
-  //   }
-  // }
   /**
    * @param {selectedCells} start
    * @param {selectedCells} end
@@ -826,7 +873,7 @@ export class canvasGrid {
       const maxCol = Math.max(...this.selectedCells.map((cell) => cell.col));
 
       const xStart = this.getColumnLeftPosition(minCol);
-      let yStart = 0;
+      let yStart = -this.scrollY;
       for (let x = 0; x < minRow; ++x) {
         yStart += this.rowHeights[x];
       }
@@ -839,13 +886,13 @@ export class canvasGrid {
 
       // console.log(this.isCtrlPressed);
       // border
-      this.ctx.save();
-      if (this.isCtrlPressed) {
-        console.log("inside if");
-        this.ctx.setLineDash([8, 8]);
-      } else {
-        this.ctx.setLineDash([]);
-      }  
+      // this.ctx.save();
+      // if (this.isCtrlPressed) {
+      //   console.log("inside if");
+      //   this.ctx.setLineDash([8, 8]);
+      // } else {
+      //   this.ctx.setLineDash([]);
+      // }
       this.ctx.strokeStyle = "rgba(0, 128, 0, 0.8)";
       this.ctx.lineWidth = 2;
       this.ctx.strokeRect(xStart, yStart, xEnd - xStart, yWidth);
@@ -877,6 +924,9 @@ export class canvasGrid {
     });
     this.drawCellContents(this.data.map(() => true));
   }
+  /**
+   * @returns {void} --> for handling search operation
+   */
   handleSearch() {
     let input = document.querySelector("#searchInput").value.toLowerCase();
     let filteredData = this.data.map((row) =>
@@ -884,6 +934,9 @@ export class canvasGrid {
     );
     this.render(filteredData);
   }
+  /**
+   * @returns {void} --> for handling replace operation
+   */
   handleReplace() {
     let searchInput = document
       .querySelector("#searchInput")
@@ -942,59 +995,6 @@ export class canvasGrid {
   /**
    * @returns {void} --> for bar graph
    */
-  // barGraph() {
-
-  //   this.isGraphDivVisible = true;
-  //   if(this.isGraphDivVisible){
-  //     this.graph.style.display = "block"
-  //     this.graph.style.position = "absolute"
-  //   }
-  //   if (this.isGraphDivVisible) {
-  //     const barGraphObj = new graph(
-  //       "graph",
-  //       this.dataForGraph,
-  //       this.colForGraph
-  //     );
-  //     barGraphObj.drawBarGraph();
-  //   }
-  // }
-  // /**
-  //  * @returns {void} --> for line graph
-  //  */
-  // lineGraph() {
-  //   this.isGraphDivVisible = true;
-  //   if(this.isGraphDivVisible){
-  //     this.graph.style.display = "block"
-  //     this.graph.style.position = "absolute"
-  //   }
-  //   if (this.isGraphDivVisible) {
-  //     const lineGraphObj = new graph(
-  //       "graph",
-  //       this.dataForGraph,
-  //       this.colForGraph
-  //     );
-  //     lineGraphObj.drawLineGraph();
-  //   }
-  // }
-  // /**
-  //  * @returns {void} --> for pie graph
-  //  */
-  // pieGraph() {
-  //   this.isGraphDivVisible = true;
-  //   if(this.isGraphDivVisible){
-  //     this.graph.style.display = "block"
-  //     this.graph.style.position = "absolute"
-  //   }
-  //   if (this.isGraphDivVisible) {
-  //     const pieGraphObj = new graph(
-  //       "graph",
-  //       this.dataForGraph,
-  //       this.colForGraph
-  //     );
-  //     pieGraphObj.drawPieGraph();
-  //   }
-  // }
-
   barGraph() {
     if (!this.graphInstance) {
       this.graphInstance = new graph(
@@ -1005,11 +1005,13 @@ export class canvasGrid {
     } else {
       this.graphInstance.setData(this.dataForGraph, this.colForGraph);
     }
-  
+
     this.showGraph();
     this.graphInstance.drawBarGraph();
   }
-  
+  /**
+   * @returns {void} --> for line graph
+   */
   lineGraph() {
     if (!this.graphInstance) {
       this.graphInstance = new graph(
@@ -1020,11 +1022,13 @@ export class canvasGrid {
     } else {
       this.graphInstance.setData(this.dataForGraph, this.colForGraph);
     }
-  
+
     this.showGraph();
     this.graphInstance.drawLineGraph();
   }
-  
+  /**
+   * @returns {void} --> for pie graph
+   */
   pieGraph() {
     if (!this.graphInstance) {
       this.graphInstance = new graph(
@@ -1035,11 +1039,13 @@ export class canvasGrid {
     } else {
       this.graphInstance.setData(this.dataForGraph, this.colForGraph);
     }
-  
+
     this.showGraph();
     this.graphInstance.drawPieGraph();
   }
-  
+  /**
+   * @returns {void} --> for visibility of graph
+   */
   showGraph() {
     this.isGraphDivVisible = true;
     if (this.isGraphDivVisible) {
@@ -1047,46 +1053,4 @@ export class canvasGrid {
       this.graph.style.position = "absolute";
     }
   }
-  
-  // infiniteScroll(e) {
-  //   const scrollHeight = this.canvas.scrollHeight;
-  //   const clientHeight = this.canvas.clientHeight;
-  //   const scrollTop = this.canvas.scrollTop;
-
-  //   // const scrollWidth = document.documentElement.scrollWidth;
-  //   // const clientWidth = document.documentElement.clientWidth;
-  //   // const scrollLeft = document.documentElement.scrollLeft;
-
-  //   if (scrollTop + clientHeight >= scrollHeight - 50) {
-  //     // currentHeight += 100;
-  //     // canvas.height = currentHeight;
-  //     // fixedColCanvas.height = currentHeight;
-  //     // currentRows += 30;
-  //     // ROWS = currentRows;
-  //     const newRows = 30;
-  //     const newRowData = Array(newRows)
-  //       .fill()
-  //       .map(() => Array(this.COLS).fill(""));
-
-  //     this.data = this.data.concat(newRowData);
-
-  //     this.currentHeight += newRows * this.CELL_HEIGHT;
-  //     this.canvas.height = this.currentHeight;
-  //     this.fixedColCanvas.height = this.currentHeight;
-
-  //     this.currentRows += newRows;
-  //     this.ROWS = this.currentRows;
-  //     this.render();
-  //     // console.log(scrollWidth);
-  //     // console.log(clientWidth);
-  //     // console.log(scrollLeft);
-  //     //   if(scrollLeft + clientWidth >= scrollWidth - 50){
-  //     //     currentWidth += 500
-  //     //     canvas.width = currentWidth;
-  //     //     fixedRowCanvas.width = currentWidth;
-  //     //     currentCols += 30;
-  //     //     COLS = currentCols;
-  //     //     fixedRow();
-  //   }
-  // }
 }
