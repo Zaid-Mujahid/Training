@@ -143,7 +143,8 @@ export class canvasGrid {
     this.scrollX = 0;
 
     this.isShiftPressed = false;
-
+    // this.newSheet = new sheet();
+    // this.newSheet.constructHtml()
     this.init();
   }
   /**
