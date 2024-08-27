@@ -24,7 +24,6 @@ export class canvasGrid {
     this.canvas = document.getElementById(myCanvas);
     this.ctx = this.canvas.getContext("2d");
     this.mainCanvasContainer = document.querySelector(canvasContainer);
-    console.log(this.mainCanvasContainer);
     this.fixedRowCanvas = document.getElementById(fixedRow);
     this.fixedColCanvas = document.getElementById(fixedCol);
     this.ctxFixedRow = this.fixedRowCanvas.getContext("2d");
@@ -143,23 +142,16 @@ export class canvasGrid {
     this.scrollX = 0;
 
     this.isShiftPressed = false;
-    // this.newSheet = new sheet();
-    // this.newSheet.constructHtml()
     this.init();
   }
   /**
    * @returns {void}
-   */
-  init() {
-    // window.addEventListener('resize', ()=>{
-    //   this.handlePixelRatio(this.canvas, this.ctx)
-    //   this.handlePixelRatio(this.fixedColCanvas, this.ctxFixedCol)
-    //   this.handlePixelRatio(this.fixedRowCanvas, this.ctxFixedRow)
-    //   this.render()
-    // })
+  */
+ async init() {
     document
       .getElementById("fileInput")
-      .addEventListener("change", this.handleFileUplaod.bind(this));
+      .addEventListener("change", this.handleFileUplaod.bind(this));  
+    await this.fetchContent()
     document
       .getElementById("deleteRowBtn")
       .addEventListener("click", this.deleteRow.bind(this));
@@ -175,18 +167,18 @@ export class canvasGrid {
     document
       .getElementById("graphBtn")
       .addEventListener("click", this.handleGraph.bind(this));
-    document
+      document
       .getElementById("barGraphBtn")
       .addEventListener("click", this.barGraph.bind(this));
-    document
+      document
       .getElementById("lineGraphBtn")
       .addEventListener("click", this.lineGraph.bind(this));
-    document
+      document
       .getElementById("pieGraphBtn")
       .addEventListener("click", this.pieGraph.bind(this));
-
-    this.fixedRowCanvas.addEventListener(
-      "click",
+      
+      this.fixedRowCanvas.addEventListener(
+        "click",
       this.fixedRowCanvasClick.bind(this)
     );
     this.fixedColCanvas.addEventListener(
@@ -224,6 +216,26 @@ export class canvasGrid {
     document.addEventListener("wheel", this.handleScroll.bind(this));
     document.addEventListener("keydown", this.handleShiftPress.bind(this));
     document.addEventListener("keyup", this.handleShiftRelease.bind(this));
+  }
+  async fetchContent(id=0){
+    try{
+      const res = await fetch(`http://localhost:5294/api/TodoItems?id=${id}`)
+      if(!res.ok){
+        throw new Error('Bad Response!')
+      }
+      const jsonData = await res.json();
+      console.log(jsonData);
+      
+      const rows = jsonData.map(item => Object.values(item));
+      
+      if(rows.length) this.ROWS += rows.length;
+      if(rows.length) this.COLS = rows[0].length;
+      if(rows.length) this.data = rows; 
+      this.render();
+    }
+    catch(error){
+      console.error('Failed to fetch: ', error)
+    }
   }
   /**
    * @returns {void} --> for retaining pixel ratio on zoom
@@ -307,7 +319,7 @@ export class canvasGrid {
       this.fixedColCanvas.width,
       this.fixedColCanvas.height
     );
-    let y = -this.scrollY;
+    let y = 0;
     for (let i = 0; i < this.ROWS; i++) {
       this.ctxFixedCol.beginPath();
       this.ctxFixedCol.moveTo(0, y);
@@ -318,11 +330,11 @@ export class canvasGrid {
         0,
         y,
         this.fixedColCanvas.width,
-        this.rowHeights[i]
+        this.rowHeights[i+this.currentRows]
       );
       this.ctxFixedCol.fillStyle = "black";
-      this.ctxFixedCol.fillText(i + 1, 5, y + this.CELL_HEIGHT / 2);
-      y += this.rowHeights[i];
+      // this.ctxFixedCol.fillText(i + 1, 5, y + this.CELL_HEIGHT / 2);
+      y += this.rowHeights[i+this.currentRows];
     }
   }
   /**
@@ -355,7 +367,7 @@ export class canvasGrid {
         this.fixedRowCanvas.height
       );
       this.fixedRow();
-      this.drawFixedCol();
+      // this.drawFixedCol();
       this.selectColumn(col);
     }
   }
@@ -369,7 +381,7 @@ export class canvasGrid {
       this.selectedCells.push({
         row,
         col,
-        dataAtRowAndCol: this.data[row][col],
+        dataAtRowAndCol: this.data[this.currentRows][col],
       });
     }
     this.highlightSelection();
@@ -427,8 +439,8 @@ export class canvasGrid {
       if (j < this.COLS) x += this.columnWidths[j];
     }
 
-    let y = -this.scrollY;
-    for (let i = 0; i <= this.ROWS; i++) {
+    let y = 0;
+    for (let i = this.currentRows; i <= this.ROWS; i++) {
       this.ctx.beginPath();
       this.ctx.moveTo(0, y);
       this.ctx.lineTo(this.COLS * 100, y);
@@ -440,23 +452,24 @@ export class canvasGrid {
    * @param {boolean[]} filteredData
    * @returns {void}
    */
-  drawCellContents(filteredData) {
+  drawCellContents(filteredData, id) {
     this.ctx.font = "14px Arial";
     this.ctx.textAlign = "left";
     this.ctx.textBaseline = "middle";
     this.ctx.fillStyle = "#000";
 
-    let y = -this.scrollY;
+    let y = 0;
     for (let i = 0; i < this.ROWS; i++) {
       if (filteredData[i]) {
         let x = -this.scrollX;
         for (let j = 0; j < this.COLS; j++) {
           if (this.data[i] && this.data[i][j] !== undefined) {
             this.ctx.fillText(this.data[i][j], x + 5, y + this.CELL_HEIGHT / 2);
+            this.ctxFixedCol.fillText(this.data[i][14],10,y + this.CELL_HEIGHT / 2)
           }
           x += this.columnWidths[j];
         }
-        y += this.rowHeights[i];
+        y += this.rowHeights[i+this.currentRows];
       }
     }
   }
@@ -492,6 +505,8 @@ export class canvasGrid {
           this.currentRows = i;
           
           if (this.data.length - this.currentRows <= 100) {
+            this.fetchContent(i);
+            this.render();
             this.appendRowsOrColumns();
           }
           break;
@@ -499,7 +514,6 @@ export class canvasGrid {
       }
     }
     if (this.isShiftPressed) {
-      console.log("inside if");
       this.scrollX += e.deltaY;
       this.scrollX = Math.max(0, this.scrollX);
 
@@ -510,7 +524,6 @@ export class canvasGrid {
           this.currentCols = i;
           
           if (this.data[0].length - this.currentCols <= 15) {
-            console.log("appending col")
             this.appendRowsOrColumns();
           }
           break;
@@ -553,34 +566,35 @@ export class canvasGrid {
    * @param {boolean[]} filteredData
    * @returns {void}
    */
-  render(filteredData = this.data.map(() => true)) {
+  render(filteredData = this.data.map(() => true), id) {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.drawGrid();
     this.fixedRow();
     this.drawFixedCol();
-    this.drawCellContents(filteredData);
+    this.drawCellContents(filteredData, id);
   }
   /**
    * 
    * @param {FileReaderEventMap} event 
    * @returns {void} --> for handling and displaying csv data
    */
-  handleFileUplaod(event) {
-    const file = event.target.files[0];
+  async handleFileUplaod(e) {
+    e.preventDefault();
+    const file = e.target.files[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    console.log(reader);
-    reader.onload = (e) => {
-      const contents = e.target.result;
-      const rows = contents.split("\n").map((row) => row.split(","));
-      this.ROWS = rows.length;
-      this.COLS = rows[0].length;
-      this.data = rows;
-      this.columnWidths = Array(this.COLS).fill(100);
-      this.render();
-    };
-    reader.readAsText(file);
+    const formData = new FormData();
+    formData.append("file", file);
+
+    await fetch("http://localhost:5294/api/TodoItems/uploadCsvData",{
+      method: "POST",
+      body: formData
+    })
+    .then((res)=> res.json())
+    .then((data)=> console.log(data))
+    .catch((err)=> console.log(err))
+
+    this.fetchContent();
   }
   /**
    * @param {number} x
@@ -610,9 +624,9 @@ export class canvasGrid {
    * @returns {number} --> to get the col at X coordinate
    */
   getRowAtY(y) {
-    let accumulatedWidth = -this.scrollY;
+    let accumulatedWidth = 0;
     for (let i = 0; i < this.ROWS; i++) {
-      accumulatedWidth += this.rowHeights[i];
+      accumulatedWidth += this.rowHeights[i+this.currentRows];
       if (y < accumulatedWidth) return i;
     }
     return -1;
@@ -622,9 +636,9 @@ export class canvasGrid {
    * @returns {number} --> to get the col no from left
    */
   getRowTopPosition(row) {
-    let y = -this.scrollY;
+    let y = 0;
     for (let i = 0; i < row; i++) {
-      y += this.rowHeights[i];
+      y += this.rowHeights[i+this.currentRows];
     }
     return y;
   }
@@ -718,7 +732,7 @@ export class canvasGrid {
     if (this.isRowResizing) {
       const newHeight = y - this.getRowTopPosition(this.resizingRow);
       if (newHeight > 10) {
-        this.rowHeights[this.resizingRow] = newHeight;
+        this.rowHeights[this.resizingRow+this.currentRows] = newHeight;
         this.render();
       }
     } else {
@@ -803,7 +817,7 @@ export class canvasGrid {
           rect.top + this.getRowTopPosition(row) - containerRect.top
         }px`;
         this.cellInput.style.width = `${this.columnWidths[col] - 8}px`;
-        this.cellInput.style.height = `${this.rowHeights[row] - 5}px`;
+        this.cellInput.style.height = `${this.rowHeights[row + this.currentRows]-5}px`;
         if(this.data[row][col]) this.cellInput.value = this.data[row][col];
         this.cellInput.focus();
 
@@ -863,7 +877,7 @@ export class canvasGrid {
         x,
         y,
         this.columnWidths[cell.col],
-        this.rowHeights[cell.row]
+        this.rowHeights[cell.row+this.currentRows]
       );
     });
 
@@ -874,15 +888,15 @@ export class canvasGrid {
       const maxCol = Math.max(...this.selectedCells.map((cell) => cell.col));
 
       const xStart = this.getColumnLeftPosition(minCol);
-      let yStart = -this.scrollY;
+      let yStart = 0;
       for (let x = 0; x < minRow; ++x) {
-        yStart += this.rowHeights[x];
+        yStart += this.rowHeights[x+this.currentRows];
       }
       const xEnd =
         this.getColumnLeftPosition(maxCol) + this.columnWidths[maxCol];
       let yWidth = 0;
       for (let x = minRow; x <= maxRow; ++x) {
-        yWidth += this.rowHeights[x];
+        yWidth += this.rowHeights[x+this.currentRows];
       }
 
       // console.log(this.isCtrlPressed);
@@ -920,7 +934,7 @@ export class canvasGrid {
         0,
         y,
         this.columnWidths[0],
-        this.rowHeights[cell.row]
+        this.rowHeights[cell.row+this.currentRows]
       );
     });
     this.drawCellContents(this.data.map(() => true));

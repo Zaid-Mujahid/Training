@@ -5,8 +5,7 @@ using RabbitMQ.Client.Events;
 using Newtonsoft.Json;
 using Dapper;
 using MySql.Data.MySqlClient;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+using TodoApi.Models;
 
 
 namespace TodoApi.BackgroundServices
@@ -18,7 +17,7 @@ namespace TodoApi.BackgroundServices
         private IConnection _connection;
         private IModel _channel;
         private int _countIndex;
-
+        
         public RabbitMQReceiverService(ILogger<RabbitMQReceiverService> logger)
         {
             _logger = logger;
@@ -41,7 +40,7 @@ namespace TodoApi.BackgroundServices
             {
                 var body = ea.Body.ToArray();
                 var message = Encoding.UTF8.GetString(body);
-                var chunk = JsonConvert.DeserializeObject<List<Dictionary<string, string>>>(message);
+                var chunk = JsonConvert.DeserializeObject<List<EmployeeRecord>>(message);
 
                 // Insert data in chunks into MySQL database
                 await InsertRecordsAsync(chunk!);
@@ -55,13 +54,18 @@ namespace TodoApi.BackgroundServices
             return Task.CompletedTask;
         }
 
-        private async Task InsertRecordsAsync(List<Dictionary<string, string>> records)
+        private async Task InsertRecordsAsync(List<EmployeeRecord> records)
         {
             const string connectionString = "Server=localhost;User ID=root;Password=root;Database=employeerecords";
             using var connection = new MySqlConnection(connectionString);
             await connection.OpenAsync();
 
-            var sql = new StringBuilder("INSERT INTO employeerecords (email_id, name, country, state, city, telephone_number, address_line_1, address_line_2, date_of_birth, gross_salary_FY2019_20, gross_salary_FY2020_21, gross_salary_FY2021_22, gross_salary_FY2022_23, gross_salary_FY2023_24, rowIndex) VALUES ");
+            var chunkId = _countIndex + 1;  // Unique identifier for each chunk
+            var startTime = DateTime.Now;
+            bool isSuccess = true;
+            string errorMsg = string.Empty;
+
+            var sql = new StringBuilder("INSERT INTO employeerecords (EmailId, Name, Country, State, City, TelephoneNumber, AddressLine1, AddressLine2, DateOfBirth, GrossSalaryFY2019_20, GrossSalaryFY2020_21, GrossSalaryFY2021_22, GrossSalaryFY2022_23, GrossSalaryFY2023_24, rowIndex) VALUES ");
             var values = new List<string>();
             var count = 0;
             var constCount = _countIndex * 10000;
@@ -71,16 +75,42 @@ namespace TodoApi.BackgroundServices
             {
                 count++;
                 var rowIndex = constCount + count;
-                values.Add($"('{record["email_id"]}', '{record["name"]}', '{record["country"]}', '{record["state"]}', '{record["city"]}', '{record["telephone_number"]}', '{record["address_line_1"]}', '{record["address_line_2"]}', '{record["date_of_birth"]}', '{record["gross_salary_FY2019_20"]}', '{record["gross_salary_FY2020_21"]}', '{record["gross_salary_FY2021_22"]}', '{record["gross_salary_FY2022_23"]}', '{record["gross_salary_FY2023_24"]}', {rowIndex})");
+                values.Add($"('{record.EmailId}', '{record.Name}', '{record.Country}', '{record.State}', '{record.City}', '{record.TelephoneNumber}', '{record.AddressLine1}', '{record.AddressLine2}', '{record.DateOfBirth:yyyy-MM-dd}', '{record.GrossSalaryFY2019_20}', '{record.GrossSalaryFY2020_21}', '{record.GrossSalaryFY2021_22}', '{record.GrossSalaryFY2022_23}', '{record.GrossSalaryFY2023_24}', {rowIndex})");
             }
 
             sql.Append(string.Join(", ", values));
             _logger.LogInformation($"Inserting {count} records into database.");
 
-            // Execute the bulk insert
-            await connection.ExecuteAsync(sql.ToString());
+
+            using var transaction = await connection.BeginTransactionAsync();
+            try
+            {
+                // Execute the bulk insert
+                await connection.ExecuteAsync(sql.ToString(), transaction: transaction);
+
+                // Commit the transaction if successful
+                await transaction.CommitAsync();
+            }
+            catch (Exception ex)
+            {
+                // Rollback the transaction on failure
+                await transaction.RollbackAsync();
+                isSuccess = false;
+                errorMsg = ex.Message;
+                _logger.LogError($"Error inserting chunk: {errorMsg}");
+            }
+
+            //update log entry
+            var logSql = "INSERT INTO ChunkLogs (LogId, InsertTime, Status, ErrorMsg) " + "VALUES (@LogId, @InsertTime, @Status, @ErrorMsg)";
+
+            await connection.ExecuteScalarAsync<int>(logSql, new{
+                LogId = chunkId,
+                InsertTime = startTime,
+                Status = isSuccess,
+                ErrorMsg = isSuccess ? "Null" : errorMsg
+            });
         }
-                public override void Dispose()
+        public override void Dispose()
         {
             _channel?.Close();
             _connection?.Close();

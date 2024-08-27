@@ -4,6 +4,8 @@ using TodoApi.Models;
 using System.Text;
 using RabbitMQ.Client;
 using Newtonsoft.Json;
+using MySql.Data.MySqlClient;
+using Dapper;
 
 namespace TodoApi.Controllers
 {
@@ -19,66 +21,63 @@ namespace TodoApi.Controllers
             _context = context;
         }
 
-        // GET: api/TodoItems
+        // GET: api/EmployeeRecords
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<TodoItem>>> GetTodoItems()
+        public async Task<ActionResult<IEnumerable<EmployeeRecord>>> GetEmployeeRecords([FromQuery] int id=1)
         {
-            return await _context.TodoItems.ToListAsync();
+            using var connection = new MySqlConnection(connectionString);
+            var records = await connection.QueryAsync<EmployeeRecord>($"SELECT * FROM employeerecords ORDER BY RowIndex limit {id},100");
+            return Ok(records);
         }
 
-        // GET: api/TodoItems/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<TodoItem>> GetTodoItem(long id)
+        // GET: api/EmployeeRecords/5
+        [HttpGet("{EmailId}")]
+        public async Task<ActionResult<EmployeeRecord>> GetEmployeeRecord(string EmailId)
         {
-            var todoItem = await _context.TodoItems.FindAsync(id);
-
-            if (todoItem == null)
-            {
-                return NotFound();
-            }
-
-            return todoItem;
+            using var connection = new MySqlConnection(connectionString);
+            var record = await connection.QuerySingleOrDefaultAsync<EmployeeRecord>("SELECT * FROM employeerecords WHERE EmailId = @EmailId", new { EmailId = EmailId });
+            if (record == null) { return NotFound(); }
+            return Ok(record);
         }
 
-        // PUT: api/TodoItems/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutTodoItem(long id, TodoItem todoItem)
+        // PUT: api/EmployeeRecords/5
+        [HttpPut()]
+        public async Task<IActionResult> PutEmployeeRecord(EmployeeRecord employeeRecord)
         {
-            if (id != todoItem.Id)
-            {
-                return BadRequest();
-            }
+            using var connection = new MySqlConnection(connectionString);
+            var result = await connection.ExecuteAsync(@"UPDATE employeerecords SET
+                EmailId = @EmailId,
+                Name = @Name,
+                Country = @Country,
+                State = @State, 
+                City = @City, 
+                TelephoneNumber = @TelephoneNumber, 
+                AddressLine1 = @AddressLine1, 
+                AddressLine2 = @AddressLine2, 
+                DateOfBirth = @DateOfBirth, 
+                GrossSalaryFY2019_20 = @GrossSalaryFY2019_20, 
+                GrossSalaryFY2020_21 = @GrossSalaryFY2020_21, 
+                GrossSalaryFY2021_22 = @GrossSalaryFY2021_22, 
+                GrossSalaryFY2022_23 = @GrossSalaryFY2022_23, 
+                GrossSalaryFY2023_24 = @GrossSalaryFY2023_24
+                WHERE EmailId = @EmailId", employeeRecord);
 
-            _context.Entry(todoItem).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!TodoItemExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-            return NoContent();
+            if (result == 0) { return BadRequest(); };
+            return Ok(result);
         }
 
-        // POST: api/TodoItems
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        // POST: api/EmployeeRecords
         [HttpPost]
-        public async Task<ActionResult<TodoItem>> PostTodoItem(TodoItem todoItem)
+        public async Task<ActionResult<EmployeeRecord>> PostEmployeeRecord(EmployeeRecord employeeRecord)
         {
-            _context.TodoItems.Add(todoItem);
-            await _context.SaveChangesAsync();
+            using var connection = new MySqlConnection(connectionString);
+            var result = await connection.ExecuteAsync(@"INSERT INTO employeerecords 
+                (EmailId, Name, Country, State, City, TelephoneNumber, AddressLine1, AddressLine2, DateOfBirth, GrossSalaryFY2019_20, GrossSalaryFY2020_21, GrossSalaryFY2021_22, GrossSalaryFY2022_23, GrossSalaryFY2023_24, RowIndex) 
+                VALUES (@EmailId, @Name, @Country, @State, @City, @TelephoneNumber, @AddressLine1, @AddressLine2, @DateOfBirth, @GrossSalaryFY2019_20, @GrossSalaryFY2020_21, @GrossSalaryFY2021_22, @GrossSalaryFY2022_23, @GrossSalaryFY2023_24, @RowIndex)", employeeRecord);
 
-            return CreatedAtAction(nameof(GetTodoItem), new { id = todoItem.Id }, todoItem);
+            if (result == 0) { return BadRequest("Unable to insert record"); }
+
+            return CreatedAtAction(nameof(GetEmployeeRecord), new { EmailId = employeeRecord.EmailId }, employeeRecord);
         }
 
         //POST: api/uplaodData
@@ -90,15 +89,12 @@ namespace TodoApi.Controllers
             using var connection = factory.CreateConnection();
             using var channel = connection.CreateModel();
 
-            if (file == null || file.Length == 0)
-            {
-                return BadRequest("file not found!");
-            }
+            if (file == null || file.Length == 0) { return BadRequest("file not found!"); }
             using var stream = new MemoryStream();
             await file.CopyToAsync(stream);
 
             var csvData = Encoding.UTF8.GetString(stream.ToArray());
-            List<Dictionary<string, string>> records = ConvertStringToJson(csvData);
+            List<EmployeeRecord> records = ConvertStringToEmployeeRecords(csvData);
             int chunkSize = 10000;
             channel.QueueDeclare(queue: "csvDataQueue",
                                  durable: true,
@@ -121,60 +117,50 @@ namespace TodoApi.Controllers
             }
             return Ok("successfully enetered data");
         }
-        private List<Dictionary<string, string>> ConvertStringToJson(string content)
+        private List<EmployeeRecord> ConvertStringToEmployeeRecords(string content)
         {
             var lines = content.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
             var headers = lines[0].Split(',');
-            var csvData = new List<Dictionary<string, string>>();
+            var records = new List<EmployeeRecord>();
 
             foreach (var line in lines.Skip(1))
             {
                 var values = line.Split(',');
-                var row = new Dictionary<string, string>();
-                for (var i = 0; i < headers.Length; i++)
+
+                var record = new EmployeeRecord
                 {
-                    row[headers[i]] = values[i];
-                }
-                csvData.Add(row);
+                    EmailId = values[0],
+                    Name = values[1],
+                    Country = values[2],
+                    State = values[3],
+                    City = values[4],
+                    TelephoneNumber = values[5],
+                    AddressLine1 = values[6],
+                    AddressLine2 = values[7],
+                    DateOfBirth = values[8],
+                    GrossSalaryFY2019_20 = values[9],
+                    GrossSalaryFY2020_21 = values[10],
+                    GrossSalaryFY2021_22 = values[11],
+                    GrossSalaryFY2022_23 = values[12],
+                    GrossSalaryFY2023_24 = values[13],
+                };
+
+                records.Add(record);
             }
 
-            return csvData;
+            return records;
         }
-
-        // private async Task InsertRecordsAsync(List<Dictionary<string, string>> records)
-        // {
-        //     using var connection = new MySqlConnection(connectionString);
-        //     await connection.OpenAsync();
-
-        //     var sql = "INSERT INTO employeerecords (Id, FirstName, LastName, Age, Height, Gender) VALUES (@Id, @FirstName, @LastName, @Age, @Height, @Gender)";
-
-        //     await connection.ExecuteAsync(sql, records.Select(record => new
-        //     {
-        //         Id = record["Id"],
-        //         FirstName = record["FirstName"],
-        //         LastName = record["LastName"],
-        //         Age = record["Age"],
-        //         Height = record["Height"],
-        //         Gender = record["Gender"]
-        //     }));
-        // }
 
         // DELETE: api/TodoItems/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteTodoItem(long id)
+        [HttpDelete("{EmailId}")]
+        public async Task<IActionResult> DeleteEmployeeRecord(String EmailId)
         {
-            var todoItem = await _context.TodoItems.FindAsync(id);
-            if (todoItem == null)
-            {
-                return NotFound();
-            }
+            using var connection = new MySqlConnection(connectionString);
+            var result = await connection.ExecuteAsync("DELETE FROM employeerecords WHERE EmailId = @EmailId", new { EmailId = EmailId });
 
-            _context.TodoItems.Remove(todoItem);
-            await _context.SaveChangesAsync();
-
+            if (result == 0) { return NotFound(); };
             return NoContent();
         }
-
         private bool TodoItemExists(long id)
         {
             return _context.TodoItems.Any(e => e.Id == id);

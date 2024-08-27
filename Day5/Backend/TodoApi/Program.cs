@@ -1,11 +1,18 @@
 using Microsoft.EntityFrameworkCore;
 using TodoApi.Models;
 using TodoApi.BackgroundServices;
-using MySqlConnector;
-using System.Configuration;
 
-
+var  MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: MyAllowSpecificOrigins,
+                      policy  =>
+                      {
+                          policy.WithOrigins("http://127.0.0.1:5500").AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin();
+                      });
+});
 
 // // my sql connection
 builder.Services.AddDbContext<TodoContext>(options => options.UseMySQL(builder.Configuration.GetConnectionString("Default")!));
@@ -29,6 +36,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors(MyAllowSpecificOrigins);
 
 app.UseAuthorization();
 
