@@ -146,12 +146,12 @@ export class canvasGrid {
   }
   /**
    * @returns {void}
-  */
- async init() {
+   */
+  async init() {
     document
       .getElementById("fileInput")
-      .addEventListener("change", this.handleFileUplaod.bind(this));  
-    await this.fetchContent()
+      .addEventListener("change", this.handleFileUplaod.bind(this));
+    await this.fetchContent();
     document
       .getElementById("deleteRowBtn")
       .addEventListener("click", this.deleteRow.bind(this));
@@ -167,18 +167,18 @@ export class canvasGrid {
     document
       .getElementById("graphBtn")
       .addEventListener("click", this.handleGraph.bind(this));
-      document
+    document
       .getElementById("barGraphBtn")
       .addEventListener("click", this.barGraph.bind(this));
-      document
+    document
       .getElementById("lineGraphBtn")
       .addEventListener("click", this.lineGraph.bind(this));
-      document
+    document
       .getElementById("pieGraphBtn")
       .addEventListener("click", this.pieGraph.bind(this));
-      
-      this.fixedRowCanvas.addEventListener(
-        "click",
+
+    this.fixedRowCanvas.addEventListener(
+      "click",
       this.fixedRowCanvasClick.bind(this)
     );
     this.fixedColCanvas.addEventListener(
@@ -214,27 +214,25 @@ export class canvasGrid {
     this.canvas.addEventListener("mouseup", this.mouseUpResize.bind(this));
     this.canvas.addEventListener("dblclick", this.doubleClick.bind(this));
     document.addEventListener("wheel", this.handleScroll.bind(this));
-    document.addEventListener("keydown", this.handleShiftPress.bind(this));
-    document.addEventListener("keyup", this.handleShiftRelease.bind(this));
+    // document.addEventListener("keydown", this.handleShiftPress.bind(this));
+    // document.addEventListener("keyup", this.handleShiftRelease.bind(this));
   }
-  async fetchContent(id=0){
-    try{
-      const res = await fetch(`http://localhost:5294/api/TodoItems?id=${id}`)
-      if(!res.ok){
-        throw new Error('Bad Response!')
+  async fetchContent(id = 0) {
+    try {
+      const res = await fetch(`http://localhost:5294/api/TodoItems?id=${id}`);
+      if (!res.ok) {
+        throw new Error("Bad Response!");
       }
       const jsonData = await res.json();
-      console.log(jsonData);
-      
-      const rows = jsonData.map(item => Object.values(item));
-      
-      if(rows.length) this.ROWS += rows.length;
-      if(rows.length) this.COLS = rows[0].length;
-      if(rows.length) this.data = rows; 
+
+      const rows = jsonData.map((item) => Object.values(item));
+
+      if (rows.length) this.ROWS += rows.length;
+      if (rows.length) this.COLS = rows[0].length;
+      if (rows.length) this.data = rows;
       this.render();
-    }
-    catch(error){
-      console.error('Failed to fetch: ', error)
+    } catch (error) {
+      console.error("Failed to fetch: ", error);
     }
   }
   /**
@@ -290,7 +288,7 @@ export class canvasGrid {
       this.fixedRowCanvas.height
     );
     let x = -this.scrollX;
-    for (let j = 0; j <= this.COLS; j++) {
+    for (let j = 0; j < 19; j++) {
       this.ctxFixedRow.beginPath();
       this.ctxFixedRow.moveTo(x, 0);
       this.ctxFixedRow.lineTo(x, this.CELL_HEIGHT);
@@ -298,7 +296,7 @@ export class canvasGrid {
       this.ctxFixedRow.fillStyle = "lightgray";
       this.ctxFixedRow.fillRect(x, 0, this.columnWidths[j], this.CELL_HEIGHT);
       this.ctxFixedRow.fillStyle = "black";
-      if(j==0) this.ctxFixedRow.fillText("A", x+5, this.CELL_HEIGHT/2)
+      if (j == 0) this.ctxFixedRow.fillText("A", x + 5, this.CELL_HEIGHT / 2);
       this.ctxFixedRow.fillText(
         this.getColName(j),
         x + 5,
@@ -330,24 +328,24 @@ export class canvasGrid {
         0,
         y,
         this.fixedColCanvas.width,
-        this.rowHeights[i+this.currentRows]
+        this.rowHeights[i + this.currentRows]
       );
-      this.ctxFixedCol.fillStyle = "black";
+      this.ctxFixedCol.fillStyle = "gray";
       // this.ctxFixedCol.fillText(i + 1, 5, y + this.CELL_HEIGHT / 2);
-      y += this.rowHeights[i+this.currentRows];
+      y += this.rowHeights[i + this.currentRows];
     }
   }
   /**
-   * 
-   * @param {number} n 
+   *
+   * @param {number} n
    * @returns {number} --> for column characters A,B,C...
    */
   getColName(n) {
     let columnName = "";
     while (n > 0) {
-      let remainder = (n) % 26;
+      let remainder = n % 26;
       columnName = String.fromCharCode(65 + remainder) + columnName;
-      n = Math.floor((n) / 26);
+      n = Math.floor(n / 26);
     }
     return columnName;
   }
@@ -430,20 +428,20 @@ export class canvasGrid {
     this.ctx.lineWidth = 0.2;
 
     let x = -this.scrollX;
-    for (let j = 0; j <= this.COLS; j++) {
+    for (let j = 0; j <= 18; j++) {
       this.ctx.beginPath();
       this.ctx.moveTo(x, 0);
       this.ctx.lineTo(x, this.canvas.height);
       this.ctx.stroke();
 
-      if (j < this.COLS) x += this.columnWidths[j];
+      if (j < 18) x += this.columnWidths[j];
     }
 
     let y = 0;
     for (let i = this.currentRows; i <= this.ROWS; i++) {
       this.ctx.beginPath();
       this.ctx.moveTo(0, y);
-      this.ctx.lineTo(this.COLS * 100, y);
+      this.ctx.lineTo(20 * 100, y);
       this.ctx.stroke();
       if (i < this.ROWS) y += this.rowHeights[i];
     }
@@ -452,7 +450,7 @@ export class canvasGrid {
    * @param {boolean[]} filteredData
    * @returns {void}
    */
-  drawCellContents(filteredData, id) {
+  drawCellContents(filteredData) {
     this.ctx.font = "14px Arial";
     this.ctx.textAlign = "left";
     this.ctx.textBaseline = "middle";
@@ -462,34 +460,48 @@ export class canvasGrid {
     for (let i = 0; i < this.ROWS; i++) {
       if (filteredData[i]) {
         let x = -this.scrollX;
-        for (let j = 0; j < this.COLS; j++) {
+        for (let j = 0; j < this.COLS - 1; j++) {
+          this.ctx.save();
+          this.ctx.beginPath();
+          this.ctx.rect(
+            x,
+            y - this.CELL_HEIGHT / 2,
+            this.columnWidths[j] - 10,
+            this.rowHeights[i] + 10
+          );
+          this.ctx.clip();
           if (this.data[i] && this.data[i][j] !== undefined) {
             this.ctx.fillText(this.data[i][j], x + 5, y + this.CELL_HEIGHT / 2);
-            this.ctxFixedCol.fillText(this.data[i][14],10,y + this.CELL_HEIGHT / 2)
+            this.ctxFixedCol.fillText(
+              this.data[i][14],
+              10,
+              y + this.CELL_HEIGHT / 2
+            );
           }
+          this.ctx.restore();
           x += this.columnWidths[j];
         }
-        y += this.rowHeights[i+this.currentRows];
+        y += this.rowHeights[i + this.currentRows];
       }
     }
   }
   /**
-   * @param {KeyboardEvent} e 
+   * @param {KeyboardEvent} e
    * @returns {void} --> to detect the shift key press
    */
-  handleShiftPress(e) {
-    if (e.key === "Shift") {
-      this.isShiftPressed = true;
-    }
-  }
+  // handleShiftPress(e) {
+  //   if (e.key === "Shift") {
+  //     this.isShiftPressed = true;
+  //   }
+  // }
   /**
    * @returns {void} --> to detect the shift key release
    */
-  handleShiftRelease() {
-    this.isShiftPressed = false;
-  }
-  /** 
-   * @param {MouseEvent} e 
+  // handleShiftRelease() {
+  //   this.isShiftPressed = false;
+  // }
+  /**
+   * @param {MouseEvent} e
    * @returns {void} --> for handling infinite scrolling
    */
   handleScroll(e) {
@@ -500,10 +512,10 @@ export class canvasGrid {
       let temp = 0;
       for (let i = 0; i < this.rowHeights.length; i++) {
         temp += this.rowHeights[i];
-        
+
         if (temp > this.scrollY) {
           this.currentRows = i;
-          
+
           if (this.data.length - this.currentRows <= 100) {
             this.fetchContent(i);
             this.render();
@@ -518,11 +530,11 @@ export class canvasGrid {
       this.scrollX = Math.max(0, this.scrollX);
 
       let temp2 = 0;
-      for (let i = 0; i < this.columnWidths.length; i++) {       
+      for (let i = 0; i < this.columnWidths.length; i++) {
         temp2 += this.columnWidths[i];
         if (temp2 > this.scrollX) {
           this.currentCols = i;
-          
+
           if (this.data[0].length - this.currentCols <= 15) {
             this.appendRowsOrColumns();
           }
@@ -536,7 +548,6 @@ export class canvasGrid {
    * @returns {void} --> for adding rows and columns
    */
   appendRowsOrColumns() {
-    
     if (!this.isShiftPressed) {
       let rowsToAdd = 500;
       this.ROWS += rowsToAdd;
@@ -548,8 +559,7 @@ export class canvasGrid {
         this.rowHeights.push(30);
         rowsToAdd--;
       }
-    }
-    else{
+    } else {
       let colsToAdd = 50;
       this.COLS += colsToAdd;
       while (colsToAdd > 0) {
@@ -574,8 +584,8 @@ export class canvasGrid {
     this.drawCellContents(filteredData, id);
   }
   /**
-   * 
-   * @param {FileReaderEventMap} event 
+   *
+   * @param {FileReaderEventMap} event
    * @returns {void} --> for handling and displaying csv data
    */
   async handleFileUplaod(e) {
@@ -586,13 +596,13 @@ export class canvasGrid {
     const formData = new FormData();
     formData.append("file", file);
 
-    await fetch("http://localhost:5294/api/TodoItems/uploadCsvData",{
+    await fetch("http://localhost:5294/api/TodoItems/uploadCsvData", {
       method: "POST",
-      body: formData
+      body: formData,
     })
-    .then((res)=> res.json())
-    .then((data)=> console.log(data))
-    .catch((err)=> console.log(err))
+      .then((res) => res.json())
+      .then((data) => console.log(data))
+      .catch((err) => console.log(err));
 
     this.fetchContent();
   }
@@ -626,7 +636,7 @@ export class canvasGrid {
   getRowAtY(y) {
     let accumulatedWidth = 0;
     for (let i = 0; i < this.ROWS; i++) {
-      accumulatedWidth += this.rowHeights[i+this.currentRows];
+      accumulatedWidth += this.rowHeights[i + this.currentRows];
       if (y < accumulatedWidth) return i;
     }
     return -1;
@@ -638,7 +648,7 @@ export class canvasGrid {
   getRowTopPosition(row) {
     let y = 0;
     for (let i = 0; i < row; i++) {
-      y += this.rowHeights[i+this.currentRows];
+      y += this.rowHeights[i + this.currentRows];
     }
     return y;
   }
@@ -732,7 +742,7 @@ export class canvasGrid {
     if (this.isRowResizing) {
       const newHeight = y - this.getRowTopPosition(this.resizingRow);
       if (newHeight > 10) {
-        this.rowHeights[this.resizingRow+this.currentRows] = newHeight;
+        this.rowHeights[this.resizingRow + this.currentRows] = newHeight;
         this.render();
       }
     } else {
@@ -807,7 +817,6 @@ export class canvasGrid {
       const y = e.clientY - rect.top;
       const col = this.getColumnAtX(x);
       const row = this.getRowAtY(y);
-      console.log(row, col);
       if (col !== -1 && row < this.ROWS) {
         this.cellInput.style.display = "block";
         this.cellInput.style.left = `${
@@ -817,14 +826,51 @@ export class canvasGrid {
           rect.top + this.getRowTopPosition(row) - containerRect.top
         }px`;
         this.cellInput.style.width = `${this.columnWidths[col] - 8}px`;
-        this.cellInput.style.height = `${this.rowHeights[row + this.currentRows]-5}px`;
-        if(this.data[row][col]) this.cellInput.value = this.data[row][col];
+        this.cellInput.style.height = `${
+          this.rowHeights[row + this.currentRows] - 5
+        }px`;
+        if (this.data[row][col]) this.cellInput.value = this.data[row][col];
         this.cellInput.focus();
 
-        this.cellInput.onblur = () => {
-          this.data[row][col] = this.cellInput.value;
+        this.cellInput.onblur = async () => {
+          const updatedValue = this.cellInput.value;
+          this.data[row][col] = updatedValue;
           this.cellInput.style.display = "none";
           this.render();
+
+          const employeeRecord = {
+            EmailId: String(this.data[row][0]),
+            Name: String(this.data[row][1]),
+            Country: String(this.data[row][2]),
+            State: String(this.data[row][3]),
+            City: String(this.data[row][4]),
+            TelephoneNumber: String(this.data[row][5]),
+            AddressLine1: String(this.data[row][6]),
+            AddressLine2: String(this.data[row][7]),
+            DateOfBirth: String(this.data[row][8]),
+            GrossSalaryFY2019_20: String(this.data[row][9]),
+            GrossSalaryFY2020_21: String(this.data[row][10]),
+            GrossSalaryFY2021_22: String(this.data[row][11]),
+            GrossSalaryFY2022_23: String(this.data[row][12]),
+            GrossSalaryFY2023_24: String(this.data[row][13])
+          };
+          console.log(employeeRecord);
+
+          try {
+            const res = await fetch(`http://localhost:5294/api/TodoItems`, {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify(employeeRecord),
+            });
+            if (!res.ok) {
+              throw new Error("Failed to update data");
+            }
+            console.log("data updated successfully!");
+          } catch (error) {
+            console.error("Error updating the record: ", error);
+          }
         };
       }
     }
@@ -855,7 +901,7 @@ export class canvasGrid {
   highlightSelection() {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.drawGrid();
-    this.drawCellContents(this.data.map(() => true));
+    // this.drawCellContents(this.data.map(() => true));
 
     if (this.selectedCells.length === 0) {
       return;
@@ -877,7 +923,7 @@ export class canvasGrid {
         x,
         y,
         this.columnWidths[cell.col],
-        this.rowHeights[cell.row+this.currentRows]
+        this.rowHeights[cell.row + this.currentRows]
       );
     });
 
@@ -890,28 +936,17 @@ export class canvasGrid {
       const xStart = this.getColumnLeftPosition(minCol);
       let yStart = 0;
       for (let x = 0; x < minRow; ++x) {
-        yStart += this.rowHeights[x+this.currentRows];
+        yStart += this.rowHeights[x + this.currentRows];
       }
       const xEnd =
         this.getColumnLeftPosition(maxCol) + this.columnWidths[maxCol];
       let yWidth = 0;
       for (let x = minRow; x <= maxRow; ++x) {
-        yWidth += this.rowHeights[x+this.currentRows];
+        yWidth += this.rowHeights[x + this.currentRows];
       }
-
-      // console.log(this.isCtrlPressed);
-      // border
-      // this.ctx.save();
-      // if (this.isCtrlPressed) {
-      //   console.log("inside if");
-      //   this.ctx.setLineDash([8, 8]);
-      // } else {
-      //   this.ctx.setLineDash([]);
-      // }
       this.ctx.strokeStyle = "rgba(0, 128, 0, 0.8)";
       this.ctx.lineWidth = 2;
       this.ctx.strokeRect(xStart, yStart, xEnd - xStart, yWidth);
-      this.ctx.restore();
     }
 
     //fixed row1
@@ -934,7 +969,7 @@ export class canvasGrid {
         0,
         y,
         this.columnWidths[0],
-        this.rowHeights[cell.row+this.currentRows]
+        this.rowHeights[cell.row + this.currentRows]
       );
     });
     this.drawCellContents(this.data.map(() => true));

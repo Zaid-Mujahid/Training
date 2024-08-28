@@ -23,7 +23,7 @@ namespace TodoApi.Controllers
 
         // GET: api/EmployeeRecords
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<EmployeeRecord>>> GetEmployeeRecords([FromQuery] int id=1)
+        public async Task<ActionResult<IEnumerable<EmployeeRecord>>> GetEmployeeRecords([FromQuery] int id = 1)
         {
             using var connection = new MySqlConnection(connectionString);
             var records = await connection.QueryAsync<EmployeeRecord>($"SELECT * FROM employeerecords ORDER BY RowIndex limit {id},100");
@@ -40,8 +40,8 @@ namespace TodoApi.Controllers
             return Ok(record);
         }
 
-        // PUT: api/EmployeeRecords/5
-        [HttpPut()]
+        // PUT: api/TodoItems
+        [HttpPut]
         public async Task<IActionResult> PutEmployeeRecord(EmployeeRecord employeeRecord)
         {
             using var connection = new MySqlConnection(connectionString);
@@ -67,18 +67,18 @@ namespace TodoApi.Controllers
         }
 
         // POST: api/EmployeeRecords
-        [HttpPost]
-        public async Task<ActionResult<EmployeeRecord>> PostEmployeeRecord(EmployeeRecord employeeRecord)
-        {
-            using var connection = new MySqlConnection(connectionString);
-            var result = await connection.ExecuteAsync(@"INSERT INTO employeerecords 
-                (EmailId, Name, Country, State, City, TelephoneNumber, AddressLine1, AddressLine2, DateOfBirth, GrossSalaryFY2019_20, GrossSalaryFY2020_21, GrossSalaryFY2021_22, GrossSalaryFY2022_23, GrossSalaryFY2023_24, RowIndex) 
-                VALUES (@EmailId, @Name, @Country, @State, @City, @TelephoneNumber, @AddressLine1, @AddressLine2, @DateOfBirth, @GrossSalaryFY2019_20, @GrossSalaryFY2020_21, @GrossSalaryFY2021_22, @GrossSalaryFY2022_23, @GrossSalaryFY2023_24, @RowIndex)", employeeRecord);
+        // [HttpPost]
+        // public async Task<ActionResult<EmployeeRecord>> PostEmployeeRecord(EmployeeRecord employeeRecord)
+        // {
+        //     using var connection = new MySqlConnection(connectionString);
+        //     var result = await connection.ExecuteAsync(@"INSERT INTO employeerecords 
+        //         (EmailId, Name, Country, State, City, TelephoneNumber, AddressLine1, AddressLine2, DateOfBirth, GrossSalaryFY2019_20, GrossSalaryFY2020_21, GrossSalaryFY2021_22, GrossSalaryFY2022_23, GrossSalaryFY2023_24, RowIndex) 
+        //         VALUES (@EmailId, @Name, @Country, @State, @City, @TelephoneNumber, @AddressLine1, @AddressLine2, @DateOfBirth, @GrossSalaryFY2019_20, @GrossSalaryFY2020_21, @GrossSalaryFY2021_22, @GrossSalaryFY2022_23, @GrossSalaryFY2023_24, @RowIndex)", employeeRecord);
 
-            if (result == 0) { return BadRequest("Unable to insert record"); }
+        //     if (result == 0) { return BadRequest("Unable to insert record"); }
 
-            return CreatedAtAction(nameof(GetEmployeeRecord), new { EmailId = employeeRecord.EmailId }, employeeRecord);
-        }
+        //     return CreatedAtAction(nameof(GetEmployeeRecord), new { EmailId = employeeRecord.EmailId }, employeeRecord);
+        // }
 
         //POST: api/uplaodData
         [HttpPost]

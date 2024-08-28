@@ -7,7 +7,7 @@ CREATE TABLE EmployeeRecords (
     TelephoneNumber varchar(20),
     AddressLine1 varchar(100),
     AddressLine2 varchar(100),
-    DateOfBirth datetime,
+    DateOfBirth varchar(100),
     GrossSalaryFY2019_20 int,
     GrossSalaryFY2020_21 int,
     GrossSalaryFY2021_22 int,
@@ -22,3 +22,4 @@ CREATE TABLE ChunkLogs(
     Status boolean,
     ErrorMsg varchar(50)
 );
+
