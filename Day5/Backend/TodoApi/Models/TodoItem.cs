@@ -34,3 +34,7 @@ public class ChunkLogs{
     public bool Status {get;set;}
     public string? ErrorMsg {get;set;}
 }
+public class ReplaceRequest{
+    public string? SearchInput { get; set; }
+    public string? ReplaceInput { get; set; }
+}

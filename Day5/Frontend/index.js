@@ -34,14 +34,14 @@ class sheet {
     uploadFile.appendChild(fileInput);
 
     //Delete Row Button
-    const deleteRowBtn = document.createElement('button');
-    deleteRowBtn.id = "deleteRowBtn";
-    deleteRowBtn.textContent = "Delete Row";
+      const deleteRowBtn = document.createElement('button');
+      deleteRowBtn.id = "deleteRowBtn";
+      deleteRowBtn.textContent = "Delete Row";
 
     //Update Row Button
-    const updateRowBtn = document.createElement('button');
-    updateRowBtn.id = "updateRowBtn";
-    updateRowBtn.textContent = "Update Row";
+    // const updateRowBtn = document.createElement('button');
+    // updateRowBtn.id = "updateRowBtn";
+    // updateRowBtn.textContent = "Update Row";
 
     //Search Input
     const searchInput = document.createElement('input');
@@ -88,7 +88,7 @@ class sheet {
     //Append all ribbon elements
     ribbon.appendChild(uploadFile);
     ribbon.appendChild(deleteRowBtn);
-    ribbon.appendChild(updateRowBtn);
+    // ribbon.appendChild(updateRowBtn);
     ribbon.appendChild(searchInput);
     ribbon.appendChild(replaceInput);
     ribbon.appendChild(replaceBtn);

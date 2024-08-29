@@ -155,12 +155,12 @@ export class canvasGrid {
     document
       .getElementById("deleteRowBtn")
       .addEventListener("click", this.deleteRow.bind(this));
-    document
-      .getElementById("updateRowBtn")
-      .addEventListener("click", this.updateRow.bind(this));
-    document
-      .getElementById("searchInput")
-      .addEventListener("change", this.handleSearch.bind(this));
+    document;
+    // .getElementById("updateRowBtn")
+    // .addEventListener("click", this.updateRow.bind(this));
+    // document
+    //   .getElementById("searchInput")
+    //   .addEventListener("change", this.handleSearch.bind(this));
     document
       .getElementById("replaceBtn")
       .addEventListener("click", this.handleReplace.bind(this));
@@ -576,12 +576,12 @@ export class canvasGrid {
    * @param {boolean[]} filteredData
    * @returns {void}
    */
-  render(filteredData = this.data.map(() => true), id) {
+  render(filteredData = this.data.map(() => true)) {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.drawGrid();
     this.fixedRow();
     this.drawFixedCol();
-    this.drawCellContents(filteredData, id);
+    this.drawCellContents(filteredData);
   }
   /**
    *
@@ -703,6 +703,10 @@ export class canvasGrid {
     this.startCell = { row, col, dataAtRowAndCol };
     this.selectedCells = [this.startCell];
     this.isSelecting = true;
+
+    //for graph
+    this.dataForGraph = [];
+    this.colForGraph = [];
     //for marching ants
     this.isCtrlPressed = false;
     this.drawFixedCol();
@@ -852,15 +856,15 @@ export class canvasGrid {
             GrossSalaryFY2020_21: String(this.data[row][10]),
             GrossSalaryFY2021_22: String(this.data[row][11]),
             GrossSalaryFY2022_23: String(this.data[row][12]),
-            GrossSalaryFY2023_24: String(this.data[row][13])
+            GrossSalaryFY2023_24: String(this.data[row][13]),
+            RowIndex: this.data[row][14],
           };
-          console.log(employeeRecord);
 
           try {
             const res = await fetch(`http://localhost:5294/api/TodoItems`, {
               method: "PUT",
               headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
               },
               body: JSON.stringify(employeeRecord),
             });
@@ -977,37 +981,49 @@ export class canvasGrid {
   /**
    * @returns {void} --> for handling search operation
    */
-  handleSearch() {
-    let input = document.querySelector("#searchInput").value.toLowerCase();
-    let filteredData = this.data.map((row) =>
-      row.some((cell) => cell.toString().toLowerCase().includes(input))
-    );
-    this.render(filteredData);
-  }
+  // handleSearch() {
+  //   let input = document.querySelector("#searchInput").value.toLowerCase();
+  //   let filteredData = this.data.map((row) =>
+  //     row.some((cell) => cell.toString().toLowerCase().includes(input))
+  //   );
+  //   this.render(filteredData);
+  // }
   /**
    * @returns {void} --> for handling replace operation
    */
-  handleReplace() {
-    let searchInput = document
-      .querySelector("#searchInput")
-      .value.toLowerCase();
+  async handleReplace() {
+    let searchInput = document.querySelector("#searchInput").value.toLowerCase();
     let replaceInput = document.querySelector("#replaceInput").value;
 
     if (searchInput === "") return;
 
-    for (let i = 0; i < this.data.length; i++) {
-      for (let j = 0; j < this.data[i].length; j++) {
-        if (this.data[i][j].toString().toLowerCase().includes(searchInput)) {
-          this.data[i][j] = this.data[i][j]
-            .toString()
-            .replace(new RegExp(searchInput, "gi"), replaceInput);
+    const replaceRequest = {
+        SearchInput: searchInput,
+        ReplaceInput: replaceInput
+    };
+
+    // API call
+    try {
+        const res = await fetch(`http://localhost:5294/api/TodoItems/batch`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(replaceRequest),
+        });
+        if (!res.ok) {
+            throw new Error("Failed to update data");
         }
-      }
+        console.log("checking");
+        
+    } catch (error) {
+        console.error("Error updating the records: ", error);
     }
-    this.handleSearch();
+
     this.render();
-    alert("data replaced successfully!");
-  }
+    alert("Data replaced successfully!");
+}
+
   /**
    * @returns {void} --> for displaying graph
    */

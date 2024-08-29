@@ -59,26 +59,61 @@ namespace TodoApi.Controllers
                 GrossSalaryFY2020_21 = @GrossSalaryFY2020_21, 
                 GrossSalaryFY2021_22 = @GrossSalaryFY2021_22, 
                 GrossSalaryFY2022_23 = @GrossSalaryFY2022_23, 
-                GrossSalaryFY2023_24 = @GrossSalaryFY2023_24
-                WHERE EmailId = @EmailId", employeeRecord);
+                GrossSalaryFY2023_24 = @GrossSalaryFY2023_24,
+                RowIndex = @RowIndex
+                WHERE RowIndex = @RowIndex", employeeRecord);
 
             if (result == 0) { return BadRequest(); };
             return Ok(result);
         }
+        // PUT: api/TodoItems/batch
+        [HttpPut("batch")]
+        public async Task<IActionResult> PutMultipleEmployeeRecord([FromBody] ReplaceRequest replaceRequest)
+        {
+            using var connection = new MySqlConnection(connectionString);
+            Console.WriteLine("hllo");
+            var sql = @"UPDATE employeerecords
+                SET 
+                    EmailId = REGEXP_REPLACE(EmailId, @SearchInput, @ReplaceInput),
+                    Name = REGEXP_REPLACE(Name, @SearchInput, @ReplaceInput),
+                    Country = REGEXP_REPLACE(Country, @SearchInput, @ReplaceInput),
+                    State = REGEXP_REPLACE(State, @SearchInput, @ReplaceInput),
+                    City = REGEXP_REPLACE(City, @SearchInput, @ReplaceInput),
+                    TelephoneNumber = REGEXP_REPLACE(TelephoneNumber, @SearchInput, @ReplaceInput),
+                    AddressLine1 = REGEXP_REPLACE(AddressLine1, @SearchInput, @ReplaceInput),
+                    AddressLine2 = REGEXP_REPLACE(AddressLine2, @SearchInput, @ReplaceInput),
+                    GrossSalaryFY2019_20 = REGEXP_REPLACE(GrossSalaryFY2019_20, @SearchInput, @ReplaceInput),
+                    GrossSalaryFY2020_21 = REGEXP_REPLACE(GrossSalaryFY2020_21, @SearchInput, @ReplaceInput),
+                    GrossSalaryFY2021_22 = REGEXP_REPLACE(GrossSalaryFY2021_22, @SearchInput, @ReplaceInput),
+                    GrossSalaryFY2022_23 = REGEXP_REPLACE(GrossSalaryFY2022_23, @SearchInput, @ReplaceInput),
+                    GrossSalaryFY2023_24 = REGEXP_REPLACE(GrossSalaryFY2023_24, @SearchInput, @ReplaceInput)";
+
+
+            var result = await connection.ExecuteAsync(sql, new
+            {
+                SearchInput = replaceRequest.SearchInput,
+                ReplaceInput = replaceRequest.ReplaceInput
+            });
+            Console.WriteLine(result);
+
+            if (result == 0){return BadRequest("No matching records found.");}
+            return Ok("Records updated successfully!");
+        }
+
 
         // POST: api/EmployeeRecords
-        // [HttpPost]
-        // public async Task<ActionResult<EmployeeRecord>> PostEmployeeRecord(EmployeeRecord employeeRecord)
-        // {
-        //     using var connection = new MySqlConnection(connectionString);
-        //     var result = await connection.ExecuteAsync(@"INSERT INTO employeerecords 
-        //         (EmailId, Name, Country, State, City, TelephoneNumber, AddressLine1, AddressLine2, DateOfBirth, GrossSalaryFY2019_20, GrossSalaryFY2020_21, GrossSalaryFY2021_22, GrossSalaryFY2022_23, GrossSalaryFY2023_24, RowIndex) 
-        //         VALUES (@EmailId, @Name, @Country, @State, @City, @TelephoneNumber, @AddressLine1, @AddressLine2, @DateOfBirth, @GrossSalaryFY2019_20, @GrossSalaryFY2020_21, @GrossSalaryFY2021_22, @GrossSalaryFY2022_23, @GrossSalaryFY2023_24, @RowIndex)", employeeRecord);
+        [HttpPost]
+        public async Task<ActionResult<EmployeeRecord>> PostEmployeeRecord(EmployeeRecord employeeRecord)
+        {
+            using var connection = new MySqlConnection(connectionString);
+            var result = await connection.ExecuteAsync(@"INSERT INTO employeerecords 
+                (EmailId, Name, Country, State, City, TelephoneNumber, AddressLine1, AddressLine2, DateOfBirth, GrossSalaryFY2019_20, GrossSalaryFY2020_21, GrossSalaryFY2021_22, GrossSalaryFY2022_23, GrossSalaryFY2023_24, RowIndex) 
+                VALUES (@EmailId, @Name, @Country, @State, @City, @TelephoneNumber, @AddressLine1, @AddressLine2, @DateOfBirth, @GrossSalaryFY2019_20, @GrossSalaryFY2020_21, @GrossSalaryFY2021_22, @GrossSalaryFY2022_23, @GrossSalaryFY2023_24, @RowIndex)", employeeRecord);
 
-        //     if (result == 0) { return BadRequest("Unable to insert record"); }
+            if (result == 0) { return BadRequest("Unable to insert record"); }
 
-        //     return CreatedAtAction(nameof(GetEmployeeRecord), new { EmailId = employeeRecord.EmailId }, employeeRecord);
-        // }
+            return CreatedAtAction(nameof(GetEmployeeRecord), new { EmailId = employeeRecord.EmailId }, employeeRecord);
+        }
 
         //POST: api/uplaodData
         [HttpPost]
