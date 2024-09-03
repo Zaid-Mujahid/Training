@@ -104,6 +104,7 @@ export class canvasGrid {
      * @type {startCell};
      */
     this.startCell = null;
+    this.copiedData = []
 
     this.maxValue = document.querySelector(".max-value");
     this.minValue = document.querySelector(".min-value");
@@ -150,17 +151,11 @@ export class canvasGrid {
   async init() {
     document
       .getElementById("fileInput")
-      .addEventListener("change", this.handleFileUplaod.bind(this));
+      .addEventListener("change", this.handleFileUpload.bind(this));
     await this.fetchContent();
     document
       .getElementById("deleteRowBtn")
       .addEventListener("click", this.deleteRow.bind(this));
-    document;
-    // .getElementById("updateRowBtn")
-    // .addEventListener("click", this.updateRow.bind(this));
-    // document
-    //   .getElementById("searchInput")
-    //   .addEventListener("change", this.handleSearch.bind(this));
     document
       .getElementById("replaceBtn")
       .addEventListener("click", this.handleReplace.bind(this));
@@ -214,9 +209,13 @@ export class canvasGrid {
     this.canvas.addEventListener("mouseup", this.mouseUpResize.bind(this));
     this.canvas.addEventListener("dblclick", this.doubleClick.bind(this));
     document.addEventListener("wheel", this.handleScroll.bind(this));
-    // document.addEventListener("keydown", this.handleShiftPress.bind(this));
+    document.addEventListener("keydown", this.handleKeyDown.bind(this));
     // document.addEventListener("keyup", this.handleShiftRelease.bind(this));
   }
+  /**
+   * @param {number} id
+   * @return {void} --> rendering data on frontend
+   */
   async fetchContent(id = 0) {
     try {
       const res = await fetch(`http://localhost:5294/api/TodoItems?id=${id}`);
@@ -227,9 +226,11 @@ export class canvasGrid {
 
       const rows = jsonData.map((item) => Object.values(item));
 
-      if (rows.length) this.ROWS += rows.length;
-      if (rows.length) this.COLS = rows[0].length;
-      if (rows.length) this.data = rows;
+      if (rows.length){
+        this.ROWS += rows.length;
+        this.COLS = rows[0].length;
+        this.data = rows;
+      } 
       this.render();
     } catch (error) {
       console.error("Failed to fetch: ", error);
@@ -250,93 +251,105 @@ export class canvasGrid {
   /**
    * @return {void} --> deleting rows
    */
-  deleteRow() {
-    if (this.ROWS > 0) {
-      this.data.pop();
-      this.ROWS--;
-      this.render();
+  async deleteRow() {
+    let firstRow = prompt("Enter the first row number");
+    let secondRow = prompt("Enter the last row number");
+    if (!firstRow || !secondRow) {
+      alert("Please enter valid row numbers.");
+      return;
     }
-  }
-  /**
-   * @return {void} --> updating rows
-   */
-  updateRow() {
-    const rowIndex = prompt("Enter the row index to update:");
-    if (rowIndex !== null && rowIndex >= 0 && rowIndex < this.ROWS) {
-      const newRowData = prompt("Enter the new row data, separated by commas:");
-      if (newRowData !== null) {
-        const newRow = newRowData.split(",");
-        if (newRow.length === this.COLS) {
-          this.data[rowIndex] = newRow;
-          this.render();
-        } else {
-          alert(`Invalid data. Expected ${this.COLS} columns.`);
-        }
+    try {
+      const FromRowIndex = parseInt(firstRow, 10);
+      const ToRowIndex = parseInt(secondRow, 10);
+      if (
+        isNaN(FromRowIndex) ||
+        isNaN(ToRowIndex) ||
+        FromRowIndex > ToRowIndex
+      ) {
+        alert("Invalid row numbers. Please enter valid numbers.");
+        return;
       }
+      const url = `http://localhost:5294/api/TodoItems?FromRowIndex=${FromRowIndex}&ToRowIndex=${ToRowIndex}`;
+
+      const res = await fetch(url, {
+        method: "DELETE",
+      });
+
+      // Handle the response
+      if (res.status === 204) {
+        alert("Rows deleted successfully!");
+        await this.fetchContent();
+      } else if (res.status === 404) {
+        alert("No rows found for the given range.");
+      } else {
+        throw new Error("Failed to delete rows");
+      }
+    } catch (error) {
+      console.error("Error deleting the records: ", error);
+      alert("An error occured while deleting the rows")
     }
   }
   /**
    * @return {void} --> top row
    */
   fixedRow() {
+    this.ctxFixedRow.clearRect(0, 0, this.fixedRowCanvas.width, this.fixedRowCanvas.height);
+    // Set styles 
     this.ctxFixedRow.strokeStyle = "black";
     this.ctxFixedRow.lineWidth = 0.2;
-    this.ctxFixedRow.clearRect(
-      0,
-      0,
-      this.fixedRowCanvas.width,
-      this.fixedRowCanvas.height
-    );
+
     let x = -this.scrollX;
+
     for (let j = 0; j < 19; j++) {
-      this.ctxFixedRow.beginPath();
-      this.ctxFixedRow.moveTo(x, 0);
-      this.ctxFixedRow.lineTo(x, this.CELL_HEIGHT);
-      this.ctxFixedRow.stroke();
-      this.ctxFixedRow.fillStyle = "lightgray";
-      this.ctxFixedRow.fillRect(x, 0, this.columnWidths[j], this.CELL_HEIGHT);
-      this.ctxFixedRow.fillStyle = "black";
-      if (j == 0) this.ctxFixedRow.fillText("A", x + 5, this.CELL_HEIGHT / 2);
-      this.ctxFixedRow.fillText(
-        this.getColName(j),
-        x + 5,
-        this.CELL_HEIGHT / 2
-      );
-      x += this.columnWidths[j];
+        const columnWidth = this.columnWidths[j];
+        
+        // Draw the grid line
+        this.ctxFixedRow.beginPath();
+        this.ctxFixedRow.moveTo(x, 0);
+        this.ctxFixedRow.lineTo(x, this.CELL_HEIGHT);
+        this.ctxFixedRow.stroke();
+
+        // Fill the cell background
+        this.ctxFixedRow.fillStyle = "lightgray";
+        this.ctxFixedRow.fillRect(x, 0, columnWidth, this.CELL_HEIGHT);
+
+        // Set text color and draw text
+        this.ctxFixedRow.fillStyle = "black";
+        const colName = j === 0 ? "A" : this.getColName(j);
+        this.ctxFixedRow.fillText(colName, x + 5, this.CELL_HEIGHT / 2);
+
+        x += columnWidth;
     }
   }
   /**
    * @return {void} --> rightmost col
    */
   drawFixedCol() {
+    this.ctxFixedCol.clearRect(0, 0, this.fixedColCanvas.width, this.fixedColCanvas.height);
+
+    // Set styles
     this.ctxFixedCol.strokeStyle = "black";
     this.ctxFixedCol.lineWidth = 0.3;
-    this.ctxFixedCol.clearRect(
-      0,
-      0,
-      this.fixedColCanvas.width,
-      this.fixedColCanvas.height
-    );
     let y = 0;
     for (let i = 0; i < this.ROWS; i++) {
-      this.ctxFixedCol.beginPath();
-      this.ctxFixedCol.moveTo(0, y);
-      this.ctxFixedCol.lineTo(this.fixedColCanvas.width, y);
-      this.ctxFixedCol.stroke();
-      this.ctxFixedCol.fillStyle = "lightgrey";
-      this.ctxFixedCol.fillRect(
-        0,
-        y,
-        this.fixedColCanvas.width,
-        this.rowHeights[i + this.currentRows]
-      );
-      this.ctxFixedCol.fillStyle = "gray";
-      // this.ctxFixedCol.fillText(i + 1, 5, y + this.CELL_HEIGHT / 2);
-      y += this.rowHeights[i + this.currentRows];
+        const rowHeight = this.rowHeights[i + this.currentRows];
+
+        // Draw the grid line
+        this.ctxFixedCol.beginPath();
+        this.ctxFixedCol.moveTo(0, y);
+        this.ctxFixedCol.lineTo(this.fixedColCanvas.width, y);
+        this.ctxFixedCol.stroke();
+
+        // Fill the cell background
+        this.ctxFixedCol.fillStyle = "lightgrey";
+        this.ctxFixedCol.fillRect(0, y, this.fixedColCanvas.width, rowHeight);
+        this.ctxFixedCol.fillText(i + 1, 5, y + this.CELL_HEIGHT / 2);
+        this.ctxFixedCol.fillStyle = "gray";
+        
+        y += rowHeight;
     }
   }
   /**
-   *
    * @param {number} n
    * @returns {number} --> for column characters A,B,C...
    */
@@ -365,7 +378,6 @@ export class canvasGrid {
         this.fixedRowCanvas.height
       );
       this.fixedRow();
-      // this.drawFixedCol();
       this.selectColumn(col);
     }
   }
@@ -463,20 +475,10 @@ export class canvasGrid {
         for (let j = 0; j < this.COLS - 1; j++) {
           this.ctx.save();
           this.ctx.beginPath();
-          this.ctx.rect(
-            x,
-            y - this.CELL_HEIGHT / 2,
-            this.columnWidths[j] - 10,
-            this.rowHeights[i] + 10
-          );
+          this.ctx.rect(x,y - this.CELL_HEIGHT / 2,this.columnWidths[j] - 10,this.rowHeights[i] + 10);
           this.ctx.clip();
           if (this.data[i] && this.data[i][j] !== undefined) {
             this.ctx.fillText(this.data[i][j], x + 5, y + this.CELL_HEIGHT / 2);
-            this.ctxFixedCol.fillText(
-              this.data[i][14],
-              10,
-              y + this.CELL_HEIGHT / 2
-            );
           }
           this.ctx.restore();
           x += this.columnWidths[j];
@@ -486,20 +488,18 @@ export class canvasGrid {
     }
   }
   /**
-   * @param {KeyboardEvent} e
    * @returns {void} --> to detect the shift key press
    */
-  // handleShiftPress(e) {
-  //   if (e.key === "Shift") {
-  //     this.isShiftPressed = true;
-  //   }
-  // }
-  /**
-   * @returns {void} --> to detect the shift key release
-   */
-  // handleShiftRelease() {
-  //   this.isShiftPressed = false;
-  // }
+  handleKeyDown(e) {
+    if (e.ctrlKey) {
+      e.preventDefault()
+      if(e.key == "c" || e.key == "C"){
+        this.copyPaste("copy");
+      }else if(e.key == "v" || e.key == "V"){
+        this.copyPaste("paste");
+      }
+    }
+  }
   /**
    * @param {MouseEvent} e
    * @returns {void} --> for handling infinite scrolling
@@ -588,7 +588,7 @@ export class canvasGrid {
    * @param {FileReaderEventMap} event
    * @returns {void} --> for handling and displaying csv data
    */
-  async handleFileUplaod(e) {
+  async handleFileUpload(e) {
     e.preventDefault();
     const file = e.target.files[0];
     if (!file) return;
@@ -596,15 +596,22 @@ export class canvasGrid {
     const formData = new FormData();
     formData.append("file", file);
 
-    await fetch("http://localhost:5294/api/TodoItems/uploadCsvData", {
-      method: "POST",
-      body: formData,
-    })
-      .then((res) => res.json())
-      .then((data) => console.log(data))
-      .catch((err) => console.log(err));
+    try {
+        const res = await fetch("http://localhost:5294/api/TodoItems/uploadCsvData", {
+            method: "POST",
+            body: formData,
+        });
 
-    this.fetchContent();
+        if (!res.ok) {
+            throw new Error(`Error: ${res.status} - ${res.statusText}`);
+        }
+        const data = await res.json();
+        console.log(data);
+        this.fetchContent();
+    } catch (err) {
+        console.error('File upload failed:', err.message || err);
+        alert('File upload failed. Please try again.');
+    }
   }
   /**
    * @param {number} x
@@ -664,9 +671,6 @@ export class canvasGrid {
     const col = this.getColumnAtX(x);
     const row = this.getRowAtY(y);
 
-    //for graph
-    this.isGraphDivVisible = false;
-    this.graph.style.display = "none";
 
     //for col resizing
     if (y <= 0) {
@@ -686,29 +690,19 @@ export class canvasGrid {
     });
 
     //for selection
-    this.ctxFixedRow.clearRect(
-      0,
-      0,
-      this.fixedRowCanvas.width,
-      this.fixedRowCanvas.height
-    );
-    this.ctxFixedCol.clearRect(
-      0,
-      0,
-      this.fixedColCanvas.width,
-      this.fixedColCanvas.height
-    );
-    // const row = Math.floor(y / this.CELL_HEIGHT);
+    this.ctxFixedRow.clearRect(0,0,this.fixedRowCanvas.width,this.fixedRowCanvas.height);
+    this.ctxFixedCol.clearRect(0,0,this.fixedColCanvas.width,this.fixedColCanvas.height);
     let dataAtRowAndCol = this.data[row][col];
     this.startCell = { row, col, dataAtRowAndCol };
     this.selectedCells = [this.startCell];
     this.isSelecting = true;
 
     //for graph
+    this.isGraphDivVisible = false;
+    this.graph.style.display = "none";
     this.dataForGraph = [];
     this.colForGraph = [];
-    //for marching ants
-    this.isCtrlPressed = false;
+
     this.drawFixedCol();
     this.fixedRow();
     this.highlightSelection();
@@ -731,15 +725,8 @@ export class canvasGrid {
       }
     } else {
       const col = this.getColumnAtX(x);
-      if (
-        col > 0 &&
-        Math.abs(x - this.getColumnLeftPosition(col)) <
-          this.RESIZE_HANDLE_WIDTH / 2
-      ) {
-        this.fixedRowCanvas.style.cursor = "ew-resize";
-      } else {
-        this.fixedRowCanvas.style.cursor = "default";
-      }
+        const isHoveringResizeHandle = col > 0 && Math.abs(x - this.getColumnLeftPosition(col)) < this.RESIZE_HANDLE_WIDTH / 2;
+        this.fixedRowCanvas.style.cursor = isHoveringResizeHandle ? "ew-resize" : "default";
     }
 
     // for row resizing
@@ -751,14 +738,8 @@ export class canvasGrid {
       }
     } else {
       const row = this.getRowAtY(y);
-      if (
-        row > 0 &&
-        Math.abs(x - this.getRowTopPosition(row)) < this.RESIZE_HANDLE_WIDTH / 2
-      ) {
-        this.fixedColCanvas.style.cursor = "ns-resize";
-      } else {
-        this.fixedColCanvas.style.cursor = "default";
-      }
+        const isHoveringRowResizeHandle = row > 0 && Math.abs(y - this.getRowTopPosition(row)) < this.RESIZE_HANDLE_WIDTH / 2;
+        this.fixedColCanvas.style.cursor = isHoveringRowResizeHandle ? "ns-resize" : "default";
     }
     //for selection
     if (!this.isSelecting) return;
@@ -785,7 +766,6 @@ export class canvasGrid {
     this.canvas.style.cursor = "cell";
 
     //for selection
-    // this.canvas.removeEventListener("mousemove", this.mouseMoveSelection);
     this.isSelecting = false;
     const dataAtRowAndColArray = this.selectedCells.map(
       (obj) => obj.dataAtRowAndCol
@@ -807,7 +787,9 @@ export class canvasGrid {
       this.cntValue.textContent = `Cell count: ${count}`;
     }
     this.getDataforGraph();
-    this.selectedCells = [];
+    console.log(this.selectedCells);
+    
+
   }
   /**
    * @param {MouseEvent} e
@@ -905,32 +887,61 @@ export class canvasGrid {
   highlightSelection() {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.drawGrid();
-    // this.drawCellContents(this.data.map(() => true));
 
-    if (this.selectedCells.length === 0) {
-      return;
-    }
-    if (this.selectedCells.length == 1) {
-      this.ctx.fillStyle = "white";
-      this.selectedCells.forEach((cell) => {
-        const x = this.getColumnLeftPosition(cell.col);
-        const y = this.getRowTopPosition(cell.row);
-        this.ctx.fillRect(x, y, this.columnWidths[cell.col], this.CELL_HEIGHT);
-      });
+    if (this.selectedCells.length === 0) return;
+
+    const firstCell = this.selectedCells[0];
+    const highlightColor = "rgba(0, 128, 0, 0.1)";
+    const borderColor = "rgba(0, 128, 0, 0.8)";
+    const fixedHighlightColor = "rgba(0, 140, 0, 0.05)";
+    
+    // Highlight the first selected cell
+    this.ctx.fillStyle = "white";
+    if (this.selectedCells.length === 1) {
+        this.fillCell(firstCell, this.ctx, this.columnWidths[firstCell.col], this.CELL_HEIGHT);
     }
 
-    this.ctx.fillStyle = "rgb(0, 128, 0, 0.1)";
-    this.selectedCells.slice(1).forEach((cell) => {
-      const x = this.getColumnLeftPosition(cell.col);
-      const y = this.getRowTopPosition(cell.row);
-      this.ctx.fillRect(
-        x,
-        y,
-        this.columnWidths[cell.col],
-        this.rowHeights[cell.row + this.currentRows]
-      );
+    // Highlight the rest of the selected cells
+    this.ctx.fillStyle = highlightColor;
+    this.selectedCells.slice(1).forEach(cell => {
+        this.fillCell(cell, this.ctx, this.columnWidths[cell.col], this.rowHeights[cell.row + this.currentRows]);
     });
 
+    // Draw border around the selection
+    this.drawSelectionBorder();
+
+    // Highlight in fixed row and column
+    this.ctxFixedRow.fillStyle = fixedHighlightColor;
+    this.selectedCells.forEach(cell => {
+        this.fillCell(cell, this.ctxFixedRow, this.columnWidths[cell.col], this.CELL_HEIGHT, true);
+    });
+
+    this.ctxFixedCol.fillStyle = fixedHighlightColor;
+    this.selectedCells.forEach(cell => {
+        this.fillCell(cell, this.ctxFixedCol, this.columnWidths[0], this.rowHeights[cell.row + this.currentRows], false, true);
+    });
+
+    this.drawCellContents(this.data.map(() => true));
+  }
+  /**
+   * @returns {void} --> for highlighting cells
+   */
+  fillCell(cell, context, width, height, isFixedRow = false, isFixedCol = false) {
+    const x = this.getColumnLeftPosition(cell.col);
+    const y = this.getRowTopPosition(cell.row);
+
+    if (isFixedRow) {
+        context.fillRect(x, 0, width, height);
+    } else if (isFixedCol) {
+        context.fillRect(0, y, width, height);
+    } else {
+        context.fillRect(x, y, width, height);
+    }
+  }
+  /**
+   * @returns {void} --> for border
+   */
+  drawSelectionBorder() {
     if (this.selectedCells.length > 0) {
       const minRow = Math.min(...this.selectedCells.map((cell) => cell.row));
       const maxRow = Math.max(...this.selectedCells.map((cell) => cell.row));
@@ -957,11 +968,7 @@ export class canvasGrid {
     this.ctxFixedRow.fillStyle = "rgb(0, 140, 0, 0.05)";
     this.selectedCells.forEach((cell) => {
       const x = this.getColumnLeftPosition(cell.col);
-      this.ctxFixedRow.fillRect(
-        x,
-        0,
-        this.columnWidths[cell.col],
-        this.CELL_HEIGHT
+      this.ctxFixedRow.fillRect(x, 0, this.columnWidths[cell.col], this.CELL_HEIGHT
       );
     });
 
@@ -969,61 +976,109 @@ export class canvasGrid {
     this.ctxFixedCol.fillStyle = "rgb(0, 140, 0, 0.05)";
     this.selectedCells.forEach((cell) => {
       const y = this.getRowTopPosition(cell.row);
-      this.ctxFixedCol.fillRect(
-        0,
-        y,
-        this.columnWidths[0],
-        this.rowHeights[cell.row + this.currentRows]
-      );
+      this.ctxFixedCol.fillRect(0,y,this.columnWidths[0],this.rowHeights[cell.row + this.currentRows]);
     });
-    this.drawCellContents(this.data.map(() => true));
   }
-  /**
-   * @returns {void} --> for handling search operation
+
+  async copyToClipboard(text) {
+    await navigator.clipboard.writeText(text).then(
+      () => {
+        console.log('Text copied to clipboard successfully!');
+      },
+      (err) => {
+        console.error('Could not copy text: ', err);
+      }
+    );
+  }
+    /**
+   * @param {start of range} startcell
+   * @param {end of range} endcell
+   * @param {pressed key} x
    */
-  // handleSearch() {
-  //   let input = document.querySelector("#searchInput").value.toLowerCase();
-  //   let filteredData = this.data.map((row) =>
-  //     row.some((cell) => cell.toString().toLowerCase().includes(input))
-  //   );
-  //   this.render(filteredData);
-  // }
+  async copyPaste(action){
+    if(action == "copy"){
+      this.copiedData = this.selectedCells;
+      this.copyToClipboardString = "";
+    }
+    else{
+      for(var cell in this.copiedData){
+        let row = this.startCell.row + this.copiedData[cell].row - this.copiedData[0].row;
+        let col  = this.startCell.col + this.copiedData[cell].col - this.copiedData[0].col;
+        this.data[row][col] = this.copiedData[cell].dataAtRowAndCol;
+
+        const employeeRecord = {
+          EmailId: String(this.data[row][0]),
+          Name: String(this.data[row][1]),
+          Country: String(this.data[row][2]),
+          State: String(this.data[row][3]),
+          City: String(this.data[row][4]),
+          TelephoneNumber: String(this.data[row][5]),
+          AddressLine1: String(this.data[row][6]),
+          AddressLine2: String(this.data[row][7]),
+          DateOfBirth: String(this.data[row][8]),
+          GrossSalaryFY2019_20: String(this.data[row][9]),
+          GrossSalaryFY2020_21: String(this.data[row][10]),
+          GrossSalaryFY2021_22: String(this.data[row][11]),
+          GrossSalaryFY2022_23: String(this.data[row][12]),
+          GrossSalaryFY2023_24: String(this.data[row][13]),
+          RowIndex: this.data[row][14],
+        };
+
+        try {
+          const res = await fetch(`http://localhost:5294/api/TodoItems`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(employeeRecord),
+          });
+          if (!res.ok) {
+            throw new Error("Failed to update data");
+          }
+        } catch (error) {
+          console.error("Error updating the record: ", error);
+        }
+      }
+      // alert("data updated successfully!");
+      this.render();
+    }
+  }
   /**
    * @returns {void} --> for handling replace operation
    */
   async handleReplace() {
-    let searchInput = document.querySelector("#searchInput").value.toLowerCase();
+    let searchInput = document
+      .querySelector("#searchInput")
+      .value.toLowerCase();
     let replaceInput = document.querySelector("#replaceInput").value;
 
     if (searchInput === "") return;
 
     const replaceRequest = {
-        SearchInput: searchInput,
-        ReplaceInput: replaceInput
+      SearchInput: searchInput,
+      ReplaceInput: replaceInput,
     };
 
     // API call
     try {
-        const res = await fetch(`http://localhost:5294/api/TodoItems/batch`, {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(replaceRequest),
-        });
-        if (!res.ok) {
-            throw new Error("Failed to update data");
-        }
-        console.log("checking");
-        
+      const res = await fetch(`http://localhost:5294/api/TodoItems/batch`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(replaceRequest),
+      });
+      if (!res.ok) {
+        throw new Error("Failed to update data");
+      }
+      console.log("checking");
     } catch (error) {
-        console.error("Error updating the records: ", error);
+      console.error("Error updating the records: ", error);
     }
 
     this.render();
     alert("Data replaced successfully!");
-}
-
+  }
   /**
    * @returns {void} --> for displaying graph
    */
@@ -1054,7 +1109,6 @@ export class canvasGrid {
   getDataforGraph() {
     for (let i = 0; i < this.selectedCells.length; ++i) {
       this.dataForGraph.push(this.selectedCells[i].dataAtRowAndCol);
-      // console.log(this.selectedCells[i].dataAtRowAndCol);
       this.colForGraph.push(i);
     }
   }

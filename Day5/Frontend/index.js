@@ -38,11 +38,6 @@ class sheet {
       deleteRowBtn.id = "deleteRowBtn";
       deleteRowBtn.textContent = "Delete Row";
 
-    //Update Row Button
-    // const updateRowBtn = document.createElement('button');
-    // updateRowBtn.id = "updateRowBtn";
-    // updateRowBtn.textContent = "Update Row";
-
     //Search Input
     const searchInput = document.createElement('input');
     searchInput.type = "search";
@@ -87,11 +82,10 @@ class sheet {
 
     //Append all ribbon elements
     ribbon.appendChild(uploadFile);
-    ribbon.appendChild(deleteRowBtn);
-    // ribbon.appendChild(updateRowBtn);
     ribbon.appendChild(searchInput);
     ribbon.appendChild(replaceInput);
     ribbon.appendChild(replaceBtn);
+    ribbon.appendChild(deleteRowBtn);
     ribbon.appendChild(graphBtn);
     ribbon.appendChild(graphBtns);
 

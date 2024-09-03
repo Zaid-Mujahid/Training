@@ -30,7 +30,7 @@ namespace TodoApi.Controllers
             return Ok(records);
         }
 
-        // GET: api/EmployeeRecords/5
+        // GET: api/EmployeeRecords/
         [HttpGet("{EmailId}")]
         public async Task<ActionResult<EmployeeRecord>> GetEmployeeRecord(string EmailId)
         {
@@ -42,7 +42,7 @@ namespace TodoApi.Controllers
 
         // PUT: api/TodoItems
         [HttpPut]
-        public async Task<IActionResult> PutEmployeeRecord(EmployeeRecord employeeRecord)
+        public async Task<IActionResult> UpdateEmployeeRecord(EmployeeRecord employeeRecord)
         {
             using var connection = new MySqlConnection(connectionString);
             var result = await connection.ExecuteAsync(@"UPDATE employeerecords SET
@@ -68,10 +68,9 @@ namespace TodoApi.Controllers
         }
         // PUT: api/TodoItems/batch
         [HttpPut("batch")]
-        public async Task<IActionResult> PutMultipleEmployeeRecord([FromBody] ReplaceRequest replaceRequest)
+        public async Task<IActionResult> UpdateMultipleEmployeeRecord([FromBody] ReplaceRequest replaceRequest)
         {
             using var connection = new MySqlConnection(connectionString);
-            Console.WriteLine("hllo");
             var sql = @"UPDATE employeerecords
                 SET 
                     EmailId = REGEXP_REPLACE(EmailId, @SearchInput, @ReplaceInput),
@@ -94,12 +93,10 @@ namespace TodoApi.Controllers
                 SearchInput = replaceRequest.SearchInput,
                 ReplaceInput = replaceRequest.ReplaceInput
             });
-            Console.WriteLine(result);
 
             if (result == 0){return BadRequest("No matching records found.");}
             return Ok("Records updated successfully!");
         }
-
 
         // POST: api/EmployeeRecords
         [HttpPost]
@@ -185,13 +182,14 @@ namespace TodoApi.Controllers
 
             return records;
         }
-
+        
         // DELETE: api/TodoItems/5
-        [HttpDelete("{EmailId}")]
-        public async Task<IActionResult> DeleteEmployeeRecord(String EmailId)
+        [HttpDelete]
+        public async Task<IActionResult> DeleteEmployeeRecord([FromQuery] int FromRowIndex, int ToRowIndex )
         {
             using var connection = new MySqlConnection(connectionString);
-            var result = await connection.ExecuteAsync("DELETE FROM employeerecords WHERE EmailId = @EmailId", new { EmailId = EmailId });
+            var difference = ToRowIndex - FromRowIndex + 1;
+            var result = await connection.ExecuteAsync("DELETE FROM employeerecords WHERE @FromRowIndex <= RowIndex AND RowIndex <= @ToRowIndex; UPDATE employeerecords SET RowIndex = RowIndex - @difference WHERE RowIndex > @ToRowIndex;", new { FromRowIndex = FromRowIndex, ToRowIndex = ToRowIndex, difference = difference });
 
             if (result == 0) { return NotFound(); };
             return NoContent();
